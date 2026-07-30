@@ -5,11 +5,6 @@ namespace ExpenseTracker.Domain.Entities;
 public class BudgetCategory : BaseEntity
 {
     /// <summary>
-    /// Gets or sets the unique identifier for the budget category.
-    /// </summary>
-    public Guid Id { get; set; }
-
-    /// <summary>
     /// Gets or sets the name of the budget category.
     /// </summary>
     public string Name { get; set; } = string.Empty;

@@ -7,11 +7,10 @@ public interface IBudgetDomainService
     /// <summary>
     /// Creates a new budget for the specified month and year with the given total budget amount.
     /// </summary>
-    /// <param name="month"></param>
-    /// <param name="year"></param>
     /// <param name="totalBudget"></param>
+    /// <param name="expenseDate"></param>
     /// <returns></returns>
-    Budget CreateBudget(int month, int year, decimal totalBudget);
+    Budget CreateBudget(decimal totalBudget, DateTime expenseDate);
 
     /// <summary>
     /// Adds a new category to the specified budget.
@@ -25,8 +24,8 @@ public interface IBudgetDomainService
     /// </summary>
     /// <param name="budget"></param>
     /// <param name="categoryId"></param>
-    /// <param name="allocatedAmount"></param>
-    void UpdateCategoryAllocation(Budget budget, Guid categoryId, decimal allocatedAmount);
+    /// <param name="allocatedBudget"></param>
+    void UpdateCategoryAllocation(Budget budget, Guid categoryId, decimal allocatedBudget);
 
     /// <summary>
     /// Calculates the total allocated amount for the specified budget by summing up the allocated amounts of all its categories.

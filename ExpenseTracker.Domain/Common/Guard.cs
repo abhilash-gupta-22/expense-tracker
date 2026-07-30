@@ -4,26 +4,41 @@ public static class Guard
 {
     public static void AgainstNull(object? value, string parameterName)
     {
-        //TODO: Implement the logic to check for null and throw an exception if the value is null.
+        if (value == null)
+        {
+            throw new ArgumentNullException("value");
+        }
     }
 
     public static void AgainstNullOrEmpty(string? value, string parameterName)
     {
-        //TODO: Implement the logic to check for null or empty string and throw an exception if the value is null or empty.
+        if (string.IsNullOrEmpty(value))
+        {
+            throw new ArgumentException("Value cannot be null or empty.", parameterName);
+        }
     }
 
     public static void AgainstNegativeAmount(decimal amount, string parameterName)
     {
-        //TODO: Implement the logic to check for negative amount and throw an exception if the amount is negative.
+        if (amount < 0)
+        {
+            throw new ArgumentOutOfRangeException("amount", "Amount cannot be negative.");
+        }
     }
 
     public static void AgainstZeroOrNegative(decimal value, string parameterName)
     {
-        //TODO: Implement the logic to check for zero or negative value and throw an exception if the value is zero or negative.
+        if (value <= 0)
+        {
+            throw new ArgumentOutOfRangeException("value", "Value cannot be zero or negative.");
+        }
     }
 
     public static void AgainstInvalidDate(DateTime value, string parameterName)
     {
-        //TODO: Implement the logic to check for invalid date and throw an exception if the date is invalid.
+        if (value == DateTime.MinValue || value == DateTime.MaxValue)
+        {
+            throw new ArgumentOutOfRangeException("value", "Invalid date provided.");
+        }
     }
 }

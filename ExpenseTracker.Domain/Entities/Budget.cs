@@ -5,11 +5,6 @@ namespace ExpenseTracker.Domain.Entities;
 public class Budget : BaseEntity
 {
     /// <summary>
-    /// Gets or sets the unique identifier for the budget.
-    /// </summary>
-    public Guid Id { get; set; }
-
-    /// <summary>
     /// Gets the month of the budget based on the ExpenseDate property.
     /// </summary>
     public string Month => ExpenseDate?.ToString("MMMM") ?? string.Empty;

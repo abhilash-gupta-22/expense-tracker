@@ -1,40 +1,75 @@
-﻿using ExpenseTracker.Domain.Entities;
+﻿using ExpenseTracker.Domain.Common;
+using ExpenseTracker.Domain.Entities;
 
 namespace ExpenseTracker.Domain.Services;
 
 public class BudgetDomainService : IBudgetDomainService
 {
-    public Budget CreateBudget(int month, int year, decimal totalBudget)
+    public Budget CreateBudget(decimal totalBudget, DateTime expenseDate)
     {
-        //TODO: Implement the logic to create a new budget for the specified month and year with the given total budget.
-        return null;
+        Guard.AgainstZeroOrNegative(totalBudget, nameof(totalBudget));
+        Guard.AgainstInvalidDate(expenseDate, nameof(expenseDate));
+
+        var budget = new Budget
+        {
+            ExpenseDate = expenseDate,
+            TotalBudget = totalBudget
+        };
+
+        return budget;
     }
 
     public void AddCategory(Budget budget, BudgetCategory category)
     {
-        //TODO: Implement the logic to add a new category to the specified budget.
+        Guard.AgainstNull(budget, nameof(budget));
+        Guard.AgainstNull(category, nameof(category));
+
+        if (!budget.BudgetCategories.Contains(category))
+        {
+            budget.BudgetCategories.Add(category);
+        }
     }
 
-    public void UpdateCategoryAllocation(Budget budget, Guid categoryId, decimal allocatedAmount)
+    public void UpdateCategoryAllocation(Budget budget, Guid categoryId, decimal allocatedBudget)
     {
-        //TODO: Implement the logic to update the allocated amount for a specific category in the specified budget.
+        Guard.AgainstNull(budget, nameof(budget));
+        Guard.AgainstNullOrEmpty(categoryId.ToString(), nameof(categoryId));
+        Guard.AgainstZeroOrNegative(allocatedBudget, nameof(allocatedBudget));
+
+        var budgetCategory = budget.BudgetCategories.FirstOrDefault(c => c.Id == categoryId);
+        if (budgetCategory != null)
+        {
+            budgetCategory.AllocatedBudget = allocatedBudget;
+        }
     }
 
     public decimal GetAllocatedAmount(Budget budget)
     {
-        //TODO: Implement the logic to calculate and return the total allocated amount for the specified budget.
-        return 0;
+        Guard.AgainstNull(budget, nameof(budget));
+
+        return budget.BudgetCategories.Sum(c => c.AllocatedBudget);
     }
 
     public decimal GetRemainingBudget(Budget budget)
     {
-        //TODO: Implement the logic to calculate and return the remaining budget for the specified budget.
-        return 0;
+        Guard.AgainstNull(budget, nameof(budget));
+
+        var totalExpense = budget.BudgetCategories.Sum(c => c.Expenses.Sum(e => e.Amount));
+        return budget.TotalBudget - totalExpense;
     }
 
     public bool IsBudgetAllocationValid(Budget budget)
     {
-        //TODO: Implement the logic to check if the total allocated amount for the specified budget does not exceed the total budget.
-        return false;
+        Guard.AgainstNull(budget, nameof(budget));
+
+        foreach (var category in budget.BudgetCategories)
+        {
+            if (category.AllocatedBudget < category.Expenses.Sum(x => x.Amount))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
