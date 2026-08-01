@@ -1,6 +1,6 @@
 ﻿using ExpenseTracker.Domain.Entities;
 
-namespace ExpenseTracker.Domain.Services;
+namespace ExpenseTracker.Domain.Interfaces;
 
 public interface IExpenseDomainService
 {

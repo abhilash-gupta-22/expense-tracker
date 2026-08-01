@@ -1,5 +1,6 @@
 ﻿using ExpenseTracker.Domain.Common;
 using ExpenseTracker.Domain.Entities;
+using ExpenseTracker.Domain.Interfaces;
 
 namespace ExpenseTracker.Domain.Services;
 
