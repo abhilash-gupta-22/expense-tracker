@@ -1,4 +1,5 @@
-﻿using ExpenseTracker.Domain.Entities;
+﻿using ExpenseTracker.Domain.Common;
+using ExpenseTracker.Domain.Entities;
 
 namespace ExpenseTracker.Domain.Services;
 
@@ -6,35 +7,65 @@ public class ExpenseDomainService : IExpenseDomainService
 {
     public void AddExpense(BudgetCategory category, Expense expense)
     {
-        // TODO: Implement the logic to add an expense to the specified budget category.
+        Guard.AgainstNull(category, nameof(category));
+        Guard.AgainstNull(expense, nameof(expense));
+
+        category.Expenses ??= new List<Expense>();
+        category.Expenses.Add(expense);
     }
 
     public void RemoveExpense(BudgetCategory category, Guid expenseId)
     {
-        // TODO: Implement the logic to remove an expense from the specified budget category by expenseId.
+        Guard.AgainstNull(category, nameof(category));
+        Guard.AgainstNullOrEmpty(expenseId.ToString(), nameof(expenseId));
+
+        var expenseToRemove = category.Expenses?.FirstOrDefault(e => e.Id == expenseId);
+        if (expenseToRemove != null)
+        {
+            _ = category.Expenses?.Remove(expenseToRemove);
+        }
     }
 
     public decimal GetTotalExpense(BudgetCategory category)
     {
-        // TODO: Implement the logic to get the total expense for the specified budget category.
-        return 0;
+        Guard.AgainstNull(category, nameof(category));
+
+        if (category.Expenses == null || !category.Expenses.Any())
+        {
+            return 0;
+        }
+
+        return category.Expenses.Sum(e => e.Amount);
     }
 
     public decimal GetRemainingCategoryBudget(BudgetCategory category)
     {
-        // TODO: Implement the logic to get the remaining budget for the specified budget category.
-        return 0;
+        Guard.AgainstNull(category, nameof(category));
+
+        var totalExpense = GetTotalExpense(category);
+        return category.AllocatedBudget - totalExpense;
     }
 
     public bool IsCategoryLimitExceeded(BudgetCategory category)
     {
-        // TODO: Implement the logic to check if the specified budget category has exceeded its limit.
+        Guard.AgainstNull(category, nameof(category));
+
+        var totalExpense = GetTotalExpense(category);
+
+        if (totalExpense > category.AllocatedBudget)
+        {
+            return true;
+        }
+
         return false;
     }
 
     public bool CanAddExpense(BudgetCategory category, decimal amount)
     {
-        // TODO: Implement the logic to check if an expense of the specified amount can be added to the budget category.
-        return false;
+        Guard.AgainstNull(category, nameof(category));
+        Guard.AgainstZeroOrNegative(amount, nameof(amount));
+
+        var totalExpense = GetTotalExpense(category);
+        return totalExpense + amount <= category.AllocatedBudget;
     }
 }
