@@ -1,19 +1,11 @@
 ﻿using ExpenseTracker.Domain.Entities;
 using ExpenseTracker.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace ExpenseTracker.API.Repositories
 {
-    public class BudgetRepository : IBudgetRepository
+    public class ExpenseRepository : IExpenseRepository
     {
-        public Task AddAsync(Budget entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> BudgetExistsAsync(int month, int year)
+        public Task AddAsync(Expense entity)
         {
             throw new NotImplementedException();
         }
@@ -28,32 +20,32 @@ namespace ExpenseTracker.API.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<Budget>> GetAllAsync()
+        public Task<IEnumerable<Expense>> GetAllAsync()
         {
             throw new NotImplementedException();
         }
 
-        public Task<Budget?> GetBudgetAsync(int month, int year)
+        public Task<Expense?> GetByIdAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Budget?> GetBudgetCompleteAsync(Guid budgetId)
+        public Task<IEnumerable<Expense>> GetExpensesByCategoryAsync(Guid categoryId)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Budget?> GetBudgetWithCategoriesAsync(Guid budgetId)
+        public Task<IEnumerable<Expense>> GetExpensesByDateRangeAsync(DateTime from, DateTime to)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Budget?> GetByIdAsync(Guid id)
+        public Task<decimal> GetTotalExpenseAsync(Guid categoryId)
         {
             throw new NotImplementedException();
         }
 
-        public Task UpdateAsync(Budget entity)
+        public Task UpdateAsync(Expense entity)
         {
             throw new NotImplementedException();
         }
