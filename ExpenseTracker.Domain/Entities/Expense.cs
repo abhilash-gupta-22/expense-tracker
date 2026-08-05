@@ -10,6 +10,11 @@ public class Expense : BaseEntity
     public Guid BudgetCategoryId { get; set; }
 
     /// <summary>
+    /// Gets or sets the name of the associated budget category.
+    /// </summary>
+    public string? BudgetCategoryName { get; set; }
+
+    /// <summary>
     /// Gets or sets the amount of the expense.
     /// </summary>
     public decimal Amount { get; set; }
