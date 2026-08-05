@@ -10,6 +10,11 @@ public class BudgetCategory : BaseEntity
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the identifier of the budget to which this category belongs.
+    /// </summary>
+    public Guid BudgetId { get; set; }
+
+    /// <summary>
     /// Gets or sets the allocated budget amount for the category.
     /// </summary>
     public decimal AllocatedBudget { get; set; }

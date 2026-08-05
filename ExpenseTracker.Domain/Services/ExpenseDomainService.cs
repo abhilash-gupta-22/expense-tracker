@@ -18,7 +18,7 @@ public class ExpenseDomainService : IExpenseDomainService
     public void RemoveExpense(BudgetCategory category, Guid expenseId)
     {
         Guard.AgainstNull(category, nameof(category));
-        Guard.AgainstNullOrEmpty(expenseId.ToString(), nameof(expenseId));
+        Guard.AgainstNull(expenseId, nameof(expenseId));
 
         var expenseToRemove = category.Expenses?.FirstOrDefault(e => e.Id == expenseId);
         if (expenseToRemove != null)

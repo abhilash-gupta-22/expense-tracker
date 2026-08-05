@@ -36,7 +36,7 @@ public class BudgetDomainService : IBudgetDomainService
     public void UpdateCategoryAllocation(Budget budget, Guid categoryId, decimal allocatedBudget)
     {
         Guard.AgainstNull(budget, nameof(budget));
-        Guard.AgainstNullOrEmpty(categoryId.ToString(), nameof(categoryId));
+        Guard.AgainstNull(categoryId, nameof(categoryId));
         Guard.AgainstZeroOrNegative(allocatedBudget, nameof(allocatedBudget));
 
         var budgetCategory = budget.BudgetCategories.FirstOrDefault(c => c.Id == categoryId);

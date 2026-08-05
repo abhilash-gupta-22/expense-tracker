@@ -10,14 +10,6 @@ public static class Guard
         }
     }
 
-    public static void AgainstNullOrEmpty(string? value, string parameterName)
-    {
-        if (string.IsNullOrEmpty(value))
-        {
-            throw new ArgumentException("Value cannot be null or empty.", parameterName);
-        }
-    }
-
     public static void AgainstNegativeAmount(decimal amount, string parameterName)
     {
         if (amount < 0)
@@ -31,14 +23,6 @@ public static class Guard
         if (value <= 0)
         {
             throw new ArgumentOutOfRangeException(parameterName, "Value cannot be zero or negative.");
-        }
-    }
-
-    public static void AgainstInvalidDate(DateTime value, string parameterName)
-    {
-        if (value == DateTime.MinValue || value == DateTime.MaxValue)
-        {
-            throw new ArgumentOutOfRangeException(parameterName, "Invalid date provided.");
         }
     }
 

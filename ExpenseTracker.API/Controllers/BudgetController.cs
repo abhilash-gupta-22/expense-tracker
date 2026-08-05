@@ -46,6 +46,8 @@ public class BudgetController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<BudgetResponse>> GetByIdAsync(Guid id)
     {
+        Guard.AgainstNull(id, nameof(id));
+
         var budget = await _budgetRepository.GetByIdAsync(id).ConfigureAwait(false);
 
         if (budget is null)
@@ -64,6 +66,9 @@ public class BudgetController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<BudgetResponse>> GetByMonthAsync(int year, int month)
     {
+        Guard.AgainstInvalidYear(year, nameof(year));
+        Guard.AgainstInvalidMonth(month, nameof(month));
+
         var budget = await _budgetRepository.GetBudgetAsync(month, year).ConfigureAwait(false);
 
         if (budget is null)
@@ -83,6 +88,8 @@ public class BudgetController : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<BudgetResponse>> CreateAsync([FromBody] CreateBudgetRequest request)
     {
+        Guard.AgainstNull(request, nameof(request));
+
         if (!ModelState.IsValid)
         {
             return ValidationProblem(ModelState);
@@ -119,6 +126,9 @@ public class BudgetController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] UpdateBudgetRequest request)
     {
+        Guard.AgainstNull(id, nameof(id));
+        Guard.AgainstNull(request, nameof(request));
+
         if (!ModelState.IsValid)
         {
             return ValidationProblem(ModelState);
@@ -150,6 +160,8 @@ public class BudgetController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteAsync(Guid id)
     {
+        Guard.AgainstNull(id, nameof(id));
+
         var exists = await _budgetRepository.ExistsAsync(id).ConfigureAwait(false);
 
         if (!exists)
