@@ -1,4 +1,5 @@
 ﻿using ExpenseTracker.API.DTOs.Budget;
+using ExpenseTracker.API.Mapping;
 using ExpenseTracker.Domain.Common;
 using ExpenseTracker.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -32,13 +33,7 @@ public class BudgetController : ControllerBase
         var budgets = await _budgetRepository.GetAllAsync().ConfigureAwait(false);
 
         // TODO: Map Entity -> DTO
-        var response = budgets.Select(b => new BudgetResponse
-        {
-            Id = b.Id,
-            Month = b.Month,
-            Year = b.Year,
-            TotalBudget = b.TotalBudget
-        });
+        var response = budgets.Select(b => b.ToResponse());
 
         return Ok(response);
     }
@@ -58,15 +53,7 @@ public class BudgetController : ControllerBase
             return NotFound();
         }
 
-        var response = new BudgetResponse
-        {
-            Id = budget.Id,
-            Month = budget.Month,
-            Year = budget.Year,
-            TotalBudget = budget.TotalBudget
-        };
-
-        return Ok(response);
+        return Ok(budget.ToResponse());
     }
 
     /// <summary>
@@ -84,15 +71,7 @@ public class BudgetController : ControllerBase
             return NotFound();
         }
 
-        var response = new BudgetResponse
-        {
-            Id = budget.Id,
-            Month = budget.Month,
-            Year = budget.Year,
-            TotalBudget = budget.TotalBudget
-        };
-
-        return Ok(response);
+        return Ok(budget.ToResponse());
     }
 
     /// <summary>
