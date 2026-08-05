@@ -6,14 +6,16 @@ namespace ExpenseTracker.Domain.Services;
 
 public class BudgetDomainService : IBudgetDomainService
 {
-    public Budget CreateBudget(decimal totalBudget, DateTime expenseDate)
+    public Budget CreateBudget(decimal totalBudget, int month, int year)
     {
         Guard.AgainstZeroOrNegative(totalBudget, nameof(totalBudget));
-        Guard.AgainstInvalidDate(expenseDate, nameof(expenseDate));
+        Guard.AgainstInvalidMonth(month, nameof(month));
+        Guard.AgainstInvalidYear(year, nameof(year));
 
         var budget = new Budget
         {
-            ExpenseDate = expenseDate,
+            Month = month,
+            Year = year,
             TotalBudget = totalBudget
         };
 

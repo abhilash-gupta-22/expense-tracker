@@ -7,17 +7,12 @@ public class Budget : BaseEntity
     /// <summary>
     /// Gets the month of the budget based on the ExpenseDate property.
     /// </summary>
-    public string Month => ExpenseDate?.ToString("MMMM") ?? string.Empty;
+    public int Month { get; set; }
 
     /// <summary>
     /// Gets the year of the budget based on the ExpenseDate property.
     /// </summary>
-    public string Year => ExpenseDate?.ToString("yyyy") ?? string.Empty;
-
-    /// <summary>
-    /// Gets or sets the date of the budget, which is used to determine the month and year of the budget.
-    /// </summary>
-    public DateTime? ExpenseDate { get; set; }
+    public int Year {  get; set; }
 
     /// <summary>
     /// Gets or sets the total budget amount.

@@ -8,9 +8,10 @@ public interface IBudgetDomainService
     /// Creates a new budget for the specified month and year with the given total budget amount.
     /// </summary>
     /// <param name="totalBudget"></param>
-    /// <param name="expenseDate"></param>
+    /// <param name="month"></param>
+    /// <param name="year"></param>
     /// <returns></returns>
-    Budget CreateBudget(decimal totalBudget, DateTime expenseDate);
+    Budget CreateBudget(decimal totalBudget, int month, int year);
 
     /// <summary>
     /// Adds a new category to the specified budget.
