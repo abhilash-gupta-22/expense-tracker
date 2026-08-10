@@ -14,6 +14,14 @@ public interface IBudgetDomainService
     Budget CreateBudget(decimal totalBudget, int month, int year);
 
     /// <summary>
+    /// Updates the total budget amount for the specified budget.
+    /// </summary>
+    /// <param name="budget"></param>
+    /// <param name="totalbudget"></param>
+    /// <returns></returns>
+    void UpdateBudget(Budget budget, decimal totalbudget);
+
+    /// <summary>
     /// Adds a new category to the specified budget.
     /// </summary>
     /// <param name="budget"></param>
@@ -29,6 +37,13 @@ public interface IBudgetDomainService
     void UpdateCategoryAllocation(Budget budget, Guid categoryId, decimal allocatedBudget);
 
     /// <summary>
+    /// Removes a category from the specified budget.
+    /// </summary>
+    /// <param name="budget"></param>
+    /// <param name="categoryId"></param>
+    void RemoveCategory(Budget budget, Guid categoryId);
+
+    /// <summary>
     /// Calculates the total allocated amount for the specified budget by summing up the allocated amounts of all its categories.
     /// </summary>
     /// <param name="budget"></param>
@@ -41,6 +56,14 @@ public interface IBudgetDomainService
     /// <param name="budget"></param>
     /// <returns></returns>
     decimal GetRemainingBudget(Budget budget);
+
+    /// <summary>
+    /// Validates whether the specified amount can be allocated to the budget without exceeding the total budget amount.
+    /// </summary>
+    /// <param name="budget"></param>
+    /// <param name="amountToAllocate"></param>
+    /// <returns></returns>
+    bool CanAllocateBudget(Budget budget, decimal amountToAllocate);
 
     /// <summary>
     /// Validates whether the total allocated amount for the specified budget does not exceed the total budget amount.

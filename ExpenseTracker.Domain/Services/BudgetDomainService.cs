@@ -23,6 +23,14 @@ public class BudgetDomainService : IBudgetDomainService
         return budget;
     }
 
+    public void UpdateBudget(Budget budget, decimal totalbudget)
+    {
+        Guard.AgainstNull(budget, nameof(budget));
+        Guard.AgainstZeroOrNegative(totalbudget, nameof(totalbudget));
+
+        budget.TotalBudget = totalbudget;
+    }
+
     public void AddCategory(Budget budget, BudgetCategory category)
     {
         Guard.AgainstNull(budget, nameof(budget));
@@ -47,6 +55,19 @@ public class BudgetDomainService : IBudgetDomainService
         }
     }
 
+    public void RemoveCategory(Budget budget, Guid categoryId)
+    {
+        Guard.AgainstNull(budget, nameof(budget));
+        Guard.AgainstNullOrEmptyGuid(categoryId, nameof(categoryId));
+
+        var categoryToRemove = budget.BudgetCategories.FirstOrDefault(c => c.Id == categoryId);
+
+        if (categoryToRemove != null)
+        {
+            _ = budget.BudgetCategories.Remove(categoryToRemove);
+        }
+    }
+
     public decimal GetAllocatedAmount(Budget budget)
     {
         Guard.AgainstNull(budget, nameof(budget));
@@ -60,6 +81,16 @@ public class BudgetDomainService : IBudgetDomainService
 
         var totalExpense = budget.BudgetCategories.Sum(c => c.Expenses.Sum(e => e.Amount));
         return budget.TotalBudget - totalExpense;
+    }
+
+    public bool CanAllocateBudget(Budget budget, decimal amount)
+    {
+        Guard.AgainstNull(budget, nameof(budget));
+        Guard.AgainstZeroOrNegative(amount, nameof(amount));
+
+        var totalAllocated = budget.BudgetCategories.Sum(c => c.AllocatedBudget);
+
+        return (totalAllocated + amount) <= budget.TotalBudget;
     }
 
     public bool IsBudgetAllocationValid(Budget budget)

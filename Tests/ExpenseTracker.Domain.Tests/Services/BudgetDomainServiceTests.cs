@@ -49,6 +49,33 @@ public class BudgetDomainServiceTests
     }
 
     [TestMethod]
+    public void UpdateBudget_ShouldUpdateBudgetWithValidParameters()
+    {
+        // Arrange
+        var newTotalBudget = 1500;
+
+        // Act
+        _budgetDomainService.UpdateBudget(_dummyBudget, newTotalBudget);
+
+        // Assert
+        Assert.AreEqual(newTotalBudget, _dummyBudget.TotalBudget);
+    }
+
+    [TestMethod]
+    public void UpdateBudget_WithInvalidParameters_ThrowsArgumentNullException()
+    {
+        // Act & Assert
+        Assert.ThrowsExactly<ArgumentNullException>(() => _budgetDomainService.UpdateBudget(null, 1500));
+    }
+
+    [TestMethod]
+    public void UpdateBudget_WithInvalidTotalBudget_ThrowsArgumentOutOfRangeException()
+    {
+        // Act & Assert
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => _budgetDomainService.UpdateBudget(_dummyBudget, -100));
+    }
+
+    [TestMethod]
     public void AddCategory_ShouldAddCategorytWithValidParameters()
     {
         // Arrange
@@ -123,6 +150,43 @@ public class BudgetDomainServiceTests
     }
 
     [TestMethod]
+    public void RemoveCategory_ShouldRemoveCategoryWithValidParameters()
+    {
+        // Arrange
+        var budgetCategory = new BudgetCategory
+        {
+            BudgetId = _dummyBudget.Id,
+            Name = "Food",
+            AllocatedBudget = 200
+        };
+        _budgetDomainService.AddCategory(_dummyBudget, budgetCategory);
+
+        // Act
+        _budgetDomainService.RemoveCategory(_dummyBudget, budgetCategory.Id);
+
+        // Assert
+        Assert.DoesNotContain(budgetCategory, _dummyBudget.BudgetCategories);
+    }
+
+    [TestMethod]
+    public void RemoveCategory_WithInvalidParameters_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var budgetCategory = new BudgetCategory
+        {
+            BudgetId = _dummyBudget.Id,
+            Name = "Food",
+            AllocatedBudget = 200
+        };
+        _budgetDomainService.AddCategory(_dummyBudget, budgetCategory);
+
+        // Act & Assert
+        Assert.ThrowsExactly<ArgumentNullException>(() => _budgetDomainService.RemoveCategory(null, budgetCategory.Id));
+        Assert.ThrowsExactly<ArgumentException>(() => _budgetDomainService.RemoveCategory(_dummyBudget, Guid.Empty));
+    }
+
+
+    [TestMethod]
     public void GetAllocatedAmount_ShouldReturnCorrectAllocatedAmount()
     {
         // Arrange
@@ -185,6 +249,84 @@ public class BudgetDomainServiceTests
 
         // Assert
         Assert.AreEqual(1000 - (50 + 30 + 20), remainingBudget);
+    }
+
+    [TestMethod]
+    public void GetRemainingBudget_WithNoExpenses_ShouldReturnTotalBudget()
+    {
+        // Arrange
+        var budgetCategory1 = new BudgetCategory
+        {
+            BudgetId = _dummyBudget.Id,
+            Name = "Food",
+            AllocatedBudget = 200
+        };
+        var budgetCategory2 = new BudgetCategory
+        {
+            BudgetId = _dummyBudget.Id,
+            Name = "Transport",
+            AllocatedBudget = 100
+        };
+        _budgetDomainService.AddCategory(_dummyBudget, budgetCategory1);
+        _budgetDomainService.AddCategory(_dummyBudget, budgetCategory2);
+
+        // Act
+        var remainingBudget = _budgetDomainService.GetRemainingBudget(_dummyBudget);
+
+        // Assert
+        Assert.AreEqual(1000, remainingBudget);
+    }
+
+    [TestMethod]
+    public void CanAllocateBudget_ShouldReturnTrueWhenTotalBudgetNotExceeded()
+    {
+        // Arrange
+        var budgetCategory1 = new BudgetCategory
+        {
+            BudgetId = _dummyBudget.Id,
+            Name = "Food",
+            AllocatedBudget = 600
+        };
+        var budgetCategory2 = new BudgetCategory
+        {
+            BudgetId = _dummyBudget.Id,
+            Name = "Transport",
+            AllocatedBudget = 300
+        };
+        _budgetDomainService.AddCategory(_dummyBudget, budgetCategory1);
+        _budgetDomainService.AddCategory(_dummyBudget, budgetCategory2);
+
+        // Act
+        var canAllocateMore = _budgetDomainService.CanAllocateBudget(_dummyBudget, 100);
+
+        // Assert
+        Assert.IsTrue(canAllocateMore);
+    }
+
+    [TestMethod]
+    public void CanAllocateBudget_ShouldReturnFalseWhenTotalBudgetExceeded()
+    {
+        // Arrange
+        var budgetCategory1 = new BudgetCategory
+        {
+            BudgetId = _dummyBudget.Id,
+            Name = "Food",
+            AllocatedBudget = 600
+        };
+        var budgetCategory2 = new BudgetCategory
+        {
+            BudgetId = _dummyBudget.Id,
+            Name = "Transport",
+            AllocatedBudget = 400
+        };
+        _budgetDomainService.AddCategory(_dummyBudget, budgetCategory1);
+        _budgetDomainService.AddCategory(_dummyBudget, budgetCategory2);
+
+        // Act
+        var canAllocateMore = _budgetDomainService.CanAllocateBudget(_dummyBudget, 100);
+
+        // Assert
+        Assert.IsFalse(canAllocateMore);
     }
 
     [TestMethod]
