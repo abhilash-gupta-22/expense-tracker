@@ -1,4 +1,5 @@
-﻿using ExpenseTracker.Domain.Common;
+﻿#nullable enable
+using ExpenseTracker.Domain.Common;
 using ExpenseTracker.Domain.Entities;
 using ExpenseTracker.Domain.Interfaces;
 
@@ -36,7 +37,7 @@ public class BudgetDomainService : IBudgetDomainService
     public void UpdateCategoryAllocation(Budget budget, Guid categoryId, decimal allocatedBudget)
     {
         Guard.AgainstNull(budget, nameof(budget));
-        Guard.AgainstNull(categoryId, nameof(categoryId));
+        Guard.AgainstNullOrEmptyGuid(categoryId, nameof(categoryId));
         Guard.AgainstZeroOrNegative(allocatedBudget, nameof(allocatedBudget));
 
         var budgetCategory = budget.BudgetCategories.FirstOrDefault(c => c.Id == categoryId);
@@ -65,12 +66,9 @@ public class BudgetDomainService : IBudgetDomainService
     {
         Guard.AgainstNull(budget, nameof(budget));
 
-        foreach (var category in budget.BudgetCategories)
+        if(budget.TotalBudget < budget.BudgetCategories.Sum(c => c.AllocatedBudget))
         {
-            if (category.AllocatedBudget < category.Expenses.Sum(x => x.Amount))
-            {
-                return false;
-            }
+            return false;
         }
 
         return true;

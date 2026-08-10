@@ -3,6 +3,9 @@
     <Project Path="Clients/ExpenseTracker.Mobile/ExpenseTracker.Mobile.csproj" Id="e6f50a55-7343-4d6a-8d22-303720a6782e" />
     <Project Path="Clients/ExpenseTracker.Web/ExpenseTracker.Web.csproj" Id="a715d78d-acc2-48f1-b730-70023a912d8d" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/ExpenseTracker.Domain.Tests/ExpenseTracker.Domain.Tests.csproj" Id="f05a9a63-8a00-4313-9c25-cede9a42cca9" />
+  </Folder>
   <Project Path="ExpenseTracker.API/ExpenseTracker.API.csproj" Id="59b82b51-b0ae-4593-86a3-045a4283e664" />
   <Project Path="ExpenseTracker.Domain/ExpenseTracker.Domain.csproj" />
 </Solution>
