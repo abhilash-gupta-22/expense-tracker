@@ -18,7 +18,7 @@ public class BudgetDomainServiceTests
     [TestInitialize]
     public void TestInitialize()
     {
-        _dummyBudget = _budgetDomainService.CreateBudget(1000, 5, 2026);
+        _dummyBudget = _budgetDomainService.CreateBudget(1000, 5, 2026).Value;
     }
 
     [TestMethod]
@@ -30,7 +30,7 @@ public class BudgetDomainServiceTests
         var year = 2026;
 
         // Act
-        var budget = _budgetDomainService.CreateBudget(totalBudget, month, year);
+        var budget = _budgetDomainService.CreateBudget(totalBudget, month, year).Value;
 
         // Assert
         Assert.IsNotNull(budget);
@@ -186,7 +186,6 @@ public class BudgetDomainServiceTests
         Assert.ThrowsExactly<ArgumentException>(() => _budgetDomainService.RemoveCategory(_dummyBudget, Guid.Empty));
     }
 
-
     [TestMethod]
     public void GetAllocatedAmount_ShouldReturnCorrectAllocatedAmount()
     {
@@ -212,7 +211,7 @@ public class BudgetDomainServiceTests
         var allocatedAmount = _budgetDomainService.GetAllocatedAmount(_dummyBudget);
 
         // Assert
-        Assert.AreEqual(300, allocatedAmount);
+        Assert.AreEqual(300, allocatedAmount.Value);
     }
 
     [TestMethod]
@@ -249,7 +248,7 @@ public class BudgetDomainServiceTests
         var remainingBudget = _budgetDomainService.GetRemainingBudget(_dummyBudget);
 
         // Assert
-        Assert.AreEqual(1000 - (50 + 30 + 20), remainingBudget);
+        Assert.AreEqual(1000 - (50 + 30 + 20), remainingBudget.Value);
     }
 
     [TestMethod]
@@ -275,7 +274,7 @@ public class BudgetDomainServiceTests
         var remainingBudget = _budgetDomainService.GetRemainingBudget(_dummyBudget);
 
         // Assert
-        Assert.AreEqual(1000, remainingBudget);
+        Assert.AreEqual(1000, remainingBudget.Value);
     }
 
     [TestMethod]
@@ -301,7 +300,7 @@ public class BudgetDomainServiceTests
         var canAllocateMore = _budgetDomainService.CanAllocateBudget(_dummyBudget, 100);
 
         // Assert
-        Assert.IsTrue(canAllocateMore);
+        Assert.IsTrue(canAllocateMore.Value);
     }
 
     [TestMethod]
@@ -327,7 +326,7 @@ public class BudgetDomainServiceTests
         var canAllocateMore = _budgetDomainService.CanAllocateBudget(_dummyBudget, 100);
 
         // Assert
-        Assert.IsFalse(canAllocateMore);
+        Assert.IsFalse(canAllocateMore.Value);
     }
 
     [TestMethod]
@@ -355,6 +354,6 @@ public class BudgetDomainServiceTests
         var isValidAllocation = _budgetDomainService.IsBudgetAllocationValid(_dummyBudget);
 
         // Assert
-        Assert.IsTrue(isValidAllocation);
+        Assert.IsTrue(isValidAllocation.Value);
     }
 }

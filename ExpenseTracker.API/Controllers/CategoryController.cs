@@ -90,6 +90,13 @@ public class CategoryController : ControllerBase
 
         _budgetService.AddCategory(budget, category);
 
+        var result = _budgetService.AddCategory(budget, category);
+
+        if (result.IsFailure)
+        {
+            return BadRequest(result.ErrorMessage);
+        }
+
         await _categoryRepository.AddAsync(category).ConfigureAwait(false);
 
         return CreatedAtAction(nameof(GetByIdAsync), new { id = category.Id }, category.ToResponse());

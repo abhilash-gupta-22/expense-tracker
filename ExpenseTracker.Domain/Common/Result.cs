@@ -10,18 +10,45 @@ public class Result
 
     protected Result(bool isSuccess, string errorMessage)
     {
-        //TODO: Implement the constructor to initialize the Result instance with the provided success status and error message.
+        IsSuccess = isSuccess;
+        ErrorMessage = errorMessage;
     }
 
     public static Result Success()
     {
-        // TODO: Implement the Success method to return a successful Result instance.
-        return null;
+        return new Result(true, string.Empty);
     }
 
     public static Result Failure(string error)
     {
-        // TODO: Implement the Failure method to return a failed Result instance with the provided error message.
-        return null;
+        ArgumentException.ThrowIfNullOrWhiteSpace(error);
+
+        return new Result(false, error);
     }
 }
+
+# region Generic Result<T> Class
+
+public class Result<T> : Result
+{
+    public T? Value { get; }
+
+    private Result(bool isSuccess, T? value, string errorMessage) : base(isSuccess, errorMessage)
+    {
+        Value = value;
+    }
+
+    public static Result<T> Success(T value)
+    {
+        return new Result<T>(true, value, string.Empty);
+    }
+
+    public static Result<T> Failure(string error)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(error);
+
+        return new Result<T>(false, default, error);
+    }
+}
+
+#endregion Generic Result<T> Class
