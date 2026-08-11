@@ -1,4 +1,5 @@
 ﻿using ExpenseTracker.Domain.Entities;
+using ExpenseTracker.Domain.Interfaces;
 using ExpenseTracker.Domain.Services;
 
 namespace ExpenseTracker.Domain.Tests.Services;
@@ -6,8 +7,8 @@ namespace ExpenseTracker.Domain.Tests.Services;
 [TestClass]
 public class BudgetDomainServiceTests
 {
-    private readonly BudgetDomainService _budgetDomainService;
-    private Budget _dummyBudget;
+    private readonly IBudgetDomainService _budgetDomainService;
+    private Budget? _dummyBudget;
 
     public BudgetDomainServiceTests()
     {
