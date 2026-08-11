@@ -102,7 +102,7 @@ public class ExpenseDomainServiceTests
         _expenseDomainService.AddExpense(_dummyCategory, anotherExpense);
 
         // Act
-        var totalExpense = _expenseDomainService.GetTotalExpense(_dummyCategory);
+        var totalExpense = _expenseDomainService.GetTotalExpense(_dummyCategory).Value;
 
         // Assert
         Assert.AreEqual(150, totalExpense);
@@ -122,7 +122,7 @@ public class ExpenseDomainServiceTests
         _expenseDomainService.AddExpense(_dummyCategory, _dummyExpense);
 
         // Act
-        var remainingBudget = _expenseDomainService.GetRemainingCategoryBudget(_dummyCategory);
+        var remainingBudget = _expenseDomainService.GetRemainingCategoryBudget(_dummyCategory).Value;
 
         // Assert
         Assert.AreEqual(450, remainingBudget);
@@ -150,7 +150,7 @@ public class ExpenseDomainServiceTests
         _expenseDomainService.AddExpense(_dummyCategory, expensiveExpense);
 
         // Act
-        var isLimitExceeded = _expenseDomainService.IsCategoryLimitExceeded(_dummyCategory);
+        var isLimitExceeded = _expenseDomainService.IsCategoryLimitExceeded(_dummyCategory).Value;
 
         // Assert
         Assert.IsTrue(isLimitExceeded);
@@ -167,7 +167,7 @@ public class ExpenseDomainServiceTests
     public void CanAddExpense_ShouldReturnTrueIfWithinLimit()
     {
         // Act
-        var canAddExpense = _expenseDomainService.CanAddExpense(_dummyCategory, 100);
+        var canAddExpense = _expenseDomainService.CanAddExpense(_dummyCategory, 100).Value;
 
         // Assert
         Assert.IsTrue(canAddExpense);

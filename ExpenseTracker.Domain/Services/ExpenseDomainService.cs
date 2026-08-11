@@ -6,16 +6,18 @@ namespace ExpenseTracker.Domain.Services;
 
 public class ExpenseDomainService : IExpenseDomainService
 {
-    public void AddExpense(BudgetCategory category, Expense expense)
+    public Result AddExpense(BudgetCategory category, Expense expense)
     {
         Guard.AgainstNull(category, nameof(category));
         Guard.AgainstNull(expense, nameof(expense));
 
         category.Expenses ??= new List<Expense>();
         category.Expenses.Add(expense);
+
+        return Result.Success();
     }
 
-    public void RemoveExpense(BudgetCategory category, Guid expenseId)
+    public Result RemoveExpense(BudgetCategory category, Guid expenseId)
     {
         Guard.AgainstNull(category, nameof(category));
         Guard.AgainstNullOrEmptyGuid(expenseId, nameof(expenseId));
@@ -25,48 +27,50 @@ public class ExpenseDomainService : IExpenseDomainService
         {
             _ = category.Expenses?.Remove(expenseToRemove);
         }
+
+        return Result.Success();
     }
 
-    public decimal GetTotalExpense(BudgetCategory category)
+    public Result<decimal> GetTotalExpense(BudgetCategory category)
     {
         Guard.AgainstNull(category, nameof(category));
 
         if (category.Expenses == null || !category.Expenses.Any())
         {
-            return 0;
+            return Result<decimal>.Success(0);
         }
 
-        return category.Expenses.Sum(e => e.Amount);
+        return Result<decimal>.Success(category.Expenses.Sum(e => e.Amount));
     }
 
-    public decimal GetRemainingCategoryBudget(BudgetCategory category)
+    public Result<decimal> GetRemainingCategoryBudget(BudgetCategory category)
     {
         Guard.AgainstNull(category, nameof(category));
 
         var totalExpense = GetTotalExpense(category);
-        return category.AllocatedBudget - totalExpense;
+        return Result<decimal>.Success(category.AllocatedBudget - totalExpense.Value);
     }
 
-    public bool IsCategoryLimitExceeded(BudgetCategory category)
+    public Result<bool> IsCategoryLimitExceeded(BudgetCategory category)
     {
         Guard.AgainstNull(category, nameof(category));
 
-        var totalExpense = GetTotalExpense(category);
+        var totalExpense = GetTotalExpense(category).Value;
 
         if (totalExpense > category.AllocatedBudget)
         {
-            return true;
+            return Result<bool>.Success(true);
         }
 
-        return false;
+        return Result<bool>.Success(false);
     }
 
-    public bool CanAddExpense(BudgetCategory category, decimal amount)
+    public Result<bool> CanAddExpense(BudgetCategory category, decimal amount)
     {
         Guard.AgainstNull(category, nameof(category));
         Guard.AgainstZeroOrNegative(amount, nameof(amount));
 
-        var totalExpense = GetTotalExpense(category);
-        return totalExpense + amount <= category.AllocatedBudget;
+        var totalExpense = GetTotalExpense(category).Value;
+        return Result<bool>.Success(totalExpense + amount <= category.AllocatedBudget);
     }
 }
