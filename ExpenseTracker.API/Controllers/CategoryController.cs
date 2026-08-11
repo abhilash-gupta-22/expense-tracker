@@ -32,7 +32,7 @@ public class CategoryController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<CategoryResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<CategoryResponse>>> GetByBudgetAsync(Guid budgetId)
     {
-        Guard.AgainstNull(budgetId, nameof(budgetId));
+        Guard.AgainstNullOrEmptyGuid(budgetId, nameof(budgetId));
 
         var categories = await _categoryRepository.GetCategoriesByBudgetAsync(budgetId).ConfigureAwait(false);
 
@@ -44,7 +44,7 @@ public class CategoryController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<CategoryResponse>> GetByIdAsync(Guid id)
     {
-        Guard.AgainstNull(id, nameof(id));
+        Guard.AgainstNullOrEmptyGuid(id, nameof(id));
 
         var category = await _categoryRepository.GetCategoryWithExpensesAsync(id).ConfigureAwait(false);
 
@@ -107,7 +107,7 @@ public class CategoryController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateAsync(Guid id, UpdateCategoryRequest request)
     {
-        Guard.AgainstNull(id, nameof(id));
+        Guard.AgainstNullOrEmptyGuid(id, nameof(id));
         Guard.AgainstNull(request, nameof(request));
 
         if (!ModelState.IsValid)
@@ -135,7 +135,7 @@ public class CategoryController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteAsync(Guid id)
     {
-        Guard.AgainstNull(id, nameof(id));
+        Guard.AgainstNullOrEmptyGuid(id, nameof(id));
 
         var exists = await _categoryRepository.ExistsAsync(id).ConfigureAwait(false);
 

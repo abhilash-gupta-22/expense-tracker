@@ -42,7 +42,7 @@ public class ExpenseController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ExpenseResponse>> GetByIdAsync(Guid id)
     {
-        Guard.AgainstNull(id, nameof(id));
+        Guard.AgainstNullOrEmptyGuid(id, nameof(id));
 
         var expense = await _expenseRepository.GetByIdAsync(id).ConfigureAwait(false);
 
@@ -58,7 +58,7 @@ public class ExpenseController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<ExpenseResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<ExpenseResponse>>> GetByCategoryAsync(Guid categoryId)
     {
-        Guard.AgainstNull(categoryId, nameof(categoryId));
+        Guard.AgainstNullOrEmptyGuid(categoryId, nameof(categoryId));
 
         var expenses = await _expenseRepository.GetExpensesByCategoryAsync(categoryId).ConfigureAwait(false);
 
@@ -96,7 +96,7 @@ public class ExpenseController : ControllerBase
             return BadRequest("Category not found.");
         }
 
-        if (!_expenseService.CanAddExpense(category, request.Amount))
+        if (!_expenseService.CanAddExpense(category, request.Amount).Value)
         {
             return BadRequest("Category budget exceeded.");
         }
@@ -121,7 +121,7 @@ public class ExpenseController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateAsync(Guid id, UpdateExpenseRequest request)
     {
-        Guard.AgainstNull(id, nameof(id));
+        Guard.AgainstNullOrEmptyGuid(id, nameof(id));
         Guard.AgainstNull(request, nameof(request));
 
         if (!ModelState.IsValid)
@@ -150,7 +150,7 @@ public class ExpenseController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteAsync(Guid id)
     {
-        Guard.AgainstNull(id, nameof(id));
+        Guard.AgainstNullOrEmptyGuid(id, nameof(id));
 
         var exists = await _expenseRepository.ExistsAsync(id).ConfigureAwait(false);
 

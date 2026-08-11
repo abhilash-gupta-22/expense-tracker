@@ -46,7 +46,7 @@ public class BudgetController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<BudgetResponse>> GetByIdAsync(Guid id)
     {
-        Guard.AgainstNull(id, nameof(id));
+        Guard.AgainstNullOrEmptyGuid(id, nameof(id));
 
         var budget = await _budgetRepository.GetByIdAsync(id).ConfigureAwait(false);
 
@@ -102,7 +102,7 @@ public class BudgetController : ControllerBase
             return Conflict($"Budget already exists for {request.Month}/{request.Year}.");
         }
 
-        var budget = _budgetService.CreateBudget(request.TotalBudget, request.Month, request.Year);
+        var budget = _budgetService.CreateBudget(request.TotalBudget, request.Month, request.Year).Value;
 
         await _budgetRepository.AddAsync(budget).ConfigureAwait(false);
 
@@ -126,7 +126,7 @@ public class BudgetController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] UpdateBudgetRequest request)
     {
-        Guard.AgainstNull(id, nameof(id));
+        Guard.AgainstNullOrEmptyGuid(id, nameof(id));
         Guard.AgainstNull(request, nameof(request));
 
         if (!ModelState.IsValid)
@@ -160,7 +160,7 @@ public class BudgetController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteAsync(Guid id)
     {
-        Guard.AgainstNull(id, nameof(id));
+        Guard.AgainstNullOrEmptyGuid(id, nameof(id));
 
         var exists = await _budgetRepository.ExistsAsync(id).ConfigureAwait(false);
 
