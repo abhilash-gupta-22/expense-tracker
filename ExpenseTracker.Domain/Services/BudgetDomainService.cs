@@ -28,6 +28,12 @@ public class BudgetDomainService : IBudgetDomainService
         Guard.AgainstNull(budget, nameof(budget));
         Guard.AgainstZeroOrNegative(totalbudget, nameof(totalbudget));
 
+        var allocatedAmount = budget.BudgetCategories.Sum(x => x.AllocatedBudget);
+        if (totalbudget < allocatedAmount)
+        {
+            return Result.Failure($"New total budget ({totalbudget}) cannot be less than already allocated amount ({allocatedAmount}).");
+        }
+
         budget.TotalBudget = totalbudget;
         return Result.Success();
     }
@@ -63,6 +69,13 @@ public class BudgetDomainService : IBudgetDomainService
         var budgetCategory = budget.BudgetCategories.FirstOrDefault(c => c.Id == categoryId);
         if (budgetCategory != null)
         {
+            // Ensure updating this category's allocation does not push total allocations over the budget
+            var totalOtherAllocations = budget.BudgetCategories.Where(c => c.Id != categoryId).Sum(c => c.AllocatedBudget);
+            if (totalOtherAllocations + allocatedBudget > budget.TotalBudget)
+            {
+                return Result.Failure("Updated category allocation exceeds the total budget.");
+            }
+
             budgetCategory.AllocatedBudget = allocatedBudget;
             return Result.Success();
         }
@@ -98,7 +111,13 @@ public class BudgetDomainService : IBudgetDomainService
         Guard.AgainstNull(budget, nameof(budget));
 
         var totalExpense = budget.BudgetCategories.Sum(c => c.Expenses.Sum(e => e.Amount));
-        return Result<decimal>.Success(budget.TotalBudget - totalExpense);
+        var remaining = budget.TotalBudget - totalExpense;
+        if (remaining < 0)
+        {
+            return Result<decimal>.Failure($"Budget exceeded by {Math.Abs(remaining)}.");
+        }
+
+        return Result<decimal>.Success(remaining);
     }
 
     public Result<bool> CanAllocateBudget(Budget budget, decimal amount)
@@ -108,16 +127,22 @@ public class BudgetDomainService : IBudgetDomainService
 
         var totalAllocated = budget.BudgetCategories.Sum(c => c.AllocatedBudget);
 
-        return Result<bool>.Success((totalAllocated + amount) <= budget.TotalBudget);
+        if ((totalAllocated + amount) <= budget.TotalBudget)
+        {
+            return Result<bool>.Success(true);
+        }
+
+        return Result<bool>.Failure("Insufficient remaining budget to allocate the requested amount.");
     }
 
     public Result<bool> IsBudgetAllocationValid(Budget budget)
     {
         Guard.AgainstNull(budget, nameof(budget));
 
-        if (budget.TotalBudget < budget.BudgetCategories.Sum(c => c.AllocatedBudget))
+        var totalAllocated = budget.BudgetCategories.Sum(c => c.AllocatedBudget);
+        if (budget.TotalBudget < totalAllocated)
         {
-            return Result<bool>.Success(false);
+            return Result<bool>.Failure("Total allocated amount exceeds the total budget.");
         }
 
         return Result<bool>.Success(true);
