@@ -23,11 +23,12 @@ public class ExpenseDomainService : IExpenseDomainService
         Guard.AgainstNullOrEmptyGuid(expenseId, nameof(expenseId));
 
         var expenseToRemove = category.Expenses?.FirstOrDefault(e => e.Id == expenseId);
-        if (expenseToRemove != null)
+        if (expenseToRemove == null)
         {
-            _ = category.Expenses?.Remove(expenseToRemove);
+            return Result.Failure("Expense not found.");
         }
 
+        _ = category.Expenses?.Remove(expenseToRemove);
         return Result.Success();
     }
 
@@ -48,21 +49,32 @@ public class ExpenseDomainService : IExpenseDomainService
         Guard.AgainstNull(category, nameof(category));
 
         var totalExpense = GetTotalExpense(category);
-        return Result<decimal>.Success(category.AllocatedBudget - totalExpense.Value);
+        if (totalExpense.IsFailure)
+        {
+            return Result<decimal>.Failure(totalExpense.ErrorMessage);
+        }
+
+        var remaining = category.AllocatedBudget - totalExpense.Value;
+        if (remaining < 0)
+        {
+            return Result<decimal>.Failure($"Category budget exceeded by {Math.Abs(remaining)}.");
+        }
+
+        return Result<decimal>.Success(remaining);
     }
 
     public Result<bool> IsCategoryLimitExceeded(BudgetCategory category)
     {
         Guard.AgainstNull(category, nameof(category));
 
-        var totalExpense = GetTotalExpense(category).Value;
-
-        if (totalExpense > category.AllocatedBudget)
+        var totalExpenseResult = GetTotalExpense(category);
+        if (totalExpenseResult.IsFailure)
         {
-            return Result<bool>.Success(true);
+            return Result<bool>.Failure(totalExpenseResult.ErrorMessage);
         }
 
-        return Result<bool>.Success(false);
+        var totalExpense = totalExpenseResult.Value;
+        return Result<bool>.Success(totalExpense > category.AllocatedBudget);
     }
 
     public Result<bool> CanAddExpense(BudgetCategory category, decimal amount)
@@ -70,7 +82,18 @@ public class ExpenseDomainService : IExpenseDomainService
         Guard.AgainstNull(category, nameof(category));
         Guard.AgainstZeroOrNegative(amount, nameof(amount));
 
-        var totalExpense = GetTotalExpense(category).Value;
-        return Result<bool>.Success(totalExpense + amount <= category.AllocatedBudget);
+        var totalExpenseResult = GetTotalExpense(category);
+        if (totalExpenseResult.IsFailure)
+        {
+            return Result<bool>.Failure(totalExpenseResult.ErrorMessage);
+        }
+
+        var totalExpense = totalExpenseResult.Value;
+        if (totalExpense + amount <= category.AllocatedBudget)
+        {
+            return Result<bool>.Success(true);
+        }
+
+        return Result<bool>.Failure("Insufficient remaining category budget to add the expense.");
     }
 }

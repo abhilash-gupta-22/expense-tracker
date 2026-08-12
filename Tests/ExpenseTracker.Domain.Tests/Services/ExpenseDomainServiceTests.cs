@@ -86,6 +86,17 @@ public class ExpenseDomainServiceTests
     }
 
     [TestMethod]
+    public void RemoveExpense_WhenExpenseNotFound_ReturnsFailure()
+    {
+        // Act
+        var result = _expenseDomainService.RemoveExpense(_dummyCategory, Guid.NewGuid());
+
+        // Assert
+        Assert.IsTrue(result.IsFailure);
+        Assert.AreEqual("Expense not found.", result.ErrorMessage);
+    }
+
+    [TestMethod]
     public void GetTotalExpense_ShouldReturnSumOfExpenses()
     {
         // Arrange
@@ -129,6 +140,28 @@ public class ExpenseDomainServiceTests
     }
 
     [TestMethod]
+    public void GetRemainingCategoryBudget_WhenExpensesExceedAllocated_ReturnsFailure()
+    {
+        // Arrange
+        var bigExpense = new Expense
+        {
+            BudgetCategoryId = _dummyCategory.BudgetId,
+            Amount = 600,
+            Remarks = "Big Spend",
+            ExpenseDate = DateTime.UtcNow
+        };
+
+        _expenseDomainService.AddExpense(_dummyCategory, bigExpense);
+
+        // Act
+        var remainingResult = _expenseDomainService.GetRemainingCategoryBudget(_dummyCategory);
+
+        // Assert
+        Assert.IsTrue(remainingResult.IsFailure);
+        Assert.AreEqual("Category budget exceeded by 100.", remainingResult.ErrorMessage);
+    }
+
+    [TestMethod]
     public void GetRemainingCategoryBudget_WithNullCategory_ShouldThrowArgumentNullException()
     {
         // Act & Assert
@@ -167,10 +200,31 @@ public class ExpenseDomainServiceTests
     public void CanAddExpense_ShouldReturnTrueIfWithinLimit()
     {
         // Act
-        var canAddExpense = _expenseDomainService.CanAddExpense(_dummyCategory, 100).Value;
+        var canAddExpense = _expenseDomainService.CanAddExpense(_dummyCategory, 100);
 
         // Assert
-        Assert.IsTrue(canAddExpense);
+        Assert.IsTrue(canAddExpense.Value);
+    }
+
+    [TestMethod]
+    public void CanAddExpense_WhenAddingExceedsBudget_ReturnsFailure()
+    {
+        // Arrange
+        var existing = new Expense
+        {
+            BudgetCategoryId = _dummyCategory.BudgetId,
+            Amount = 450,
+            Remarks = "Almost full",
+            ExpenseDate = DateTime.UtcNow
+        };
+        _expenseDomainService.AddExpense(_dummyCategory, existing);
+
+        // Act
+        var result = _expenseDomainService.CanAddExpense(_dummyCategory, 100);
+
+        // Assert
+        Assert.IsTrue(result.IsFailure);
+        Assert.AreEqual("Insufficient remaining category budget to add the expense.", result.ErrorMessage);
     }
 
     [TestMethod]
