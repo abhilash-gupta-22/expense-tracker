@@ -6,18 +6,29 @@ namespace ExpenseTracker.API.Data;
 public class ExpenseTrackerDbContext : DbContext
 {
     public ExpenseTrackerDbContext(DbContextOptions<ExpenseTrackerDbContext> options)
+        : base(options)
     {
-
     }
 
-    public DbSet<Budget> Budgets { get; set; }
+    /// <summary>
+    /// Gets or sets the budgets.
+    /// </summary>
+    public DbSet<Budget> Budgets => Set<Budget>();
 
-    public DbSet<BudgetCategory> Categories { get; set; }
+    /// <summary>
+    /// Gets or sets the budget categories.
+    /// </summary>
+    public DbSet<BudgetCategory> BudgetCategories => Set<BudgetCategory>();
 
-    public DbSet<Expense> Expenses { get; set; }
+    /// <summary>
+    /// Gets or sets the expenses.
+    /// </summary>
+    public DbSet<Expense> Expenses => Set<Expense>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Expense>();
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ExpenseTrackerDbContext).Assembly);
     }
 }

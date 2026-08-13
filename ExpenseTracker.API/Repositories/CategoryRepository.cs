@@ -19,14 +19,14 @@ public class CategoryRepository : ICategoryRepository
 
     public async Task<IEnumerable<BudgetCategory>> GetAllAsync()
     {
-        return await _context.Categories.AsNoTracking().OrderBy(x => x.Name).ToListAsync().ConfigureAwait(false);
+        return await _context.BudgetCategories.AsNoTracking().OrderBy(x => x.Name).ToListAsync().ConfigureAwait(false);
     }
 
     public async Task<BudgetCategory?> GetByIdAsync(Guid id)
     {
         Guard.AgainstNull(id, nameof(id));
 
-        return await _context.Categories.AsNoTracking()
+        return await _context.BudgetCategories.AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
     }
 
@@ -34,7 +34,7 @@ public class CategoryRepository : ICategoryRepository
     {
         Guard.AgainstNull(entity, nameof(entity));
 
-        await _context.Categories.AddAsync(entity).ConfigureAwait(false);
+        await _context.BudgetCategories.AddAsync(entity).ConfigureAwait(false);
         await _context.SaveChangesAsync().ConfigureAwait(false);
     }
 
@@ -42,7 +42,7 @@ public class CategoryRepository : ICategoryRepository
     {
         Guard.AgainstNull(entity, nameof(entity));
 
-        _context.Categories.Update(entity);
+        _context.BudgetCategories.Update(entity);
         await _context.SaveChangesAsync().ConfigureAwait(false);
     }
 
@@ -50,14 +50,14 @@ public class CategoryRepository : ICategoryRepository
     {
         Guard.AgainstNull(id, nameof(id));
 
-        var category = await _context.Categories.FindAsync(id).ConfigureAwait(false);
+        var category = await _context.BudgetCategories.FindAsync(id).ConfigureAwait(false);
 
         if (category is null)
         {
             return;
         }
 
-        _context.Categories.Remove(category);
+        _context.BudgetCategories.Remove(category);
 
         await _context.SaveChangesAsync().ConfigureAwait(false);
     }
@@ -66,14 +66,14 @@ public class CategoryRepository : ICategoryRepository
     {
         Guard.AgainstNull(id, nameof(id));
 
-        return await _context.Categories.AnyAsync(x => x.Id == id).ConfigureAwait(false);
+        return await _context.BudgetCategories.AnyAsync(x => x.Id == id).ConfigureAwait(false);
     }
 
     public async Task<IEnumerable<BudgetCategory>> GetCategoriesByBudgetAsync(Guid budgetId)
     {
         Guard.AgainstNull(budgetId, nameof(budgetId));
 
-        return await _context.Categories.Where(x => x.BudgetId == budgetId).OrderBy(x => x.Name)
+        return await _context.BudgetCategories.Where(x => x.BudgetId == budgetId).OrderBy(x => x.Name)
             .AsNoTracking().ToListAsync().ConfigureAwait(false);
     }
 
@@ -81,7 +81,7 @@ public class CategoryRepository : ICategoryRepository
     {
         Guard.AgainstNull(categoryId, nameof(categoryId));
 
-        return await _context.Categories.Include(x => x.Expenses).AsNoTracking()
+        return await _context.BudgetCategories.Include(x => x.Expenses).AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == categoryId).ConfigureAwait(false);
     }
 
@@ -90,6 +90,6 @@ public class CategoryRepository : ICategoryRepository
         Guard.AgainstNull(budgetId, nameof(budgetId));
         Guard.AgainstNull(categoryName, nameof(categoryName));
 
-        return await _context.Categories.AnyAsync(x => x.BudgetId == budgetId && x.Name == categoryName).ConfigureAwait(false);
+        return await _context.BudgetCategories.AnyAsync(x => x.BudgetId == budgetId && x.Name == categoryName).ConfigureAwait(false);
     }
 }
