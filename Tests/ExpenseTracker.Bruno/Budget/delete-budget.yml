@@ -1,0 +1,24 @@
+info:
+  name: Delete Budget
+  type: http
+  seq: 10
+
+http:
+  method: DELETE
+  url: https://localhost:5001/api/budgets/{{budgetId}}
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: Deletes a budget by id. Replace {{budgetId}} with a real GUID or set it in the collection variables.
+
+> expect-status 204
+
+# Verify deletion
+GET /budgets/{{budgetId}}
+Accept: application/json
+
+> expect-status 404

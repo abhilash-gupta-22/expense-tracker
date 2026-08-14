@@ -1,0 +1,47 @@
+info:
+  name: Create Budget
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: http://localhost:5278/api/budgets
+  headers:
+    Content-Type: application/json
+  body: |
+    {
+      "month": 5,
+      "year": 2026,
+      "totalBudget": 1000.0
+    }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: Creates a new monthly budget. Replace {{month}} and {{year}} with valid values or set them in the collection variables.
+
+# Expectations and validation steps
+expect:
+  - status: 201
+  - jsonpath: 
+      path: $.id
+      exists: true
+  - header: 
+      name: location
+      exists: true
+
+# Follow-up verification request
+verify:
+  - method: GET
+    url: /budgets/{{createdBudgetId}}
+    expect:
+      - status: 200
+      - jsonpath:
+          path: $.totalBudget
+          equals: 1000.0
+
+# Note: Bruno runners may use different keys for expectations. If your runner uses the older inline directive format,
+# use the .bruno variant (create-budget.bruno) instead which contains > expect-* directives.
