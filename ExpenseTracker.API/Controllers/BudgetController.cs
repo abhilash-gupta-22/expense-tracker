@@ -88,7 +88,10 @@ public class BudgetController : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<BudgetResponse>> CreateAsync([FromBody] CreateBudgetRequest request)
     {
-        Guard.AgainstNull(request, nameof(request));
+        if (request is null)
+        {
+            return BadRequest("Request body is required.");
+        }
 
         if (!ModelState.IsValid)
         {
@@ -99,10 +102,17 @@ public class BudgetController : ControllerBase
 
         if (budgetExists)
         {
-            return Conflict($"Budget already exists for {request.Month}/{request.Year}.");
+            return Conflict($"Budget already exists for " + $"{request.Month}/{request.Year}.");
         }
 
-        var budget = _budgetService.CreateBudget(request.TotalBudget, request.Month, request.Year).Value;
+        var result = _budgetService.CreateBudget(request.TotalBudget, request.Month, request.Year);
+
+        if (result.IsFailure)
+        {
+            return BadRequest(result.ErrorMessage);
+        }
+
+        var budget = result.Value;
 
         await _budgetRepository.AddAsync(budget).ConfigureAwait(false);
 
