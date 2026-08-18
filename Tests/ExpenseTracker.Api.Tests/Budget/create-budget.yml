@@ -1,0 +1,23 @@
+info:
+  name: create-budget
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:{{port-number}}/api/budgets
+  body:
+    type: json
+    data: |-
+      {
+        "month": 8,
+        "year": 2026,
+        "totalBudget": 80000
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

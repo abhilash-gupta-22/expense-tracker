@@ -1,0 +1,5 @@
+name: Rest-Api-Test
+variables:
+  - name: port-number
+    value: "5278"
+    description: ""

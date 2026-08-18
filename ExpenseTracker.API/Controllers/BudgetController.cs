@@ -124,7 +124,9 @@ public class BudgetController : ControllerBase
             TotalBudget = budget.TotalBudget
         };
 
-        return CreatedAtAction(nameof(GetByIdAsync), new { id = budget.Id }, response);
+        // Action names have the "Async" suffix trimmed by the framework when routing.
+        // Use the action name without the Async suffix to ensure link generation succeeds.
+        return CreatedAtAction(nameof(GetByIdAsync).Replace("Async", string.Empty), new { id = budget.Id }, response);
     }
 
     /// <summary>
