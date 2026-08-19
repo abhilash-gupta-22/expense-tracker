@@ -1,0 +1,15 @@
+info:
+  name: delete-budget
+  type: http
+  seq: 2
+
+http:
+  method: DELETE
+  url: https://localhost:{{port-number}}/api/budgets/{{budget-id}}
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

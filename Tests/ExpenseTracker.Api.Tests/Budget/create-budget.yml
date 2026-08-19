@@ -16,6 +16,13 @@ http:
       }
   auth: inherit
 
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const response = res.getBody();
+        bru.setVar("budget-id", response.id);
+
 settings:
   encodeUrl: true
   timeout: 0
