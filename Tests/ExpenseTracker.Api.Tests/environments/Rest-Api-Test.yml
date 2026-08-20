@@ -3,3 +3,9 @@ variables:
   - name: port-number
     value: "5278"
     description: ""
+  - name: budget-id
+    value: ""
+    description: ""
+  - name: category-id
+    value: ""
+    description: ""

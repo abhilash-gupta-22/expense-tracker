@@ -1,0 +1,31 @@
+info:
+  name: update-category
+  type: http
+  seq: 5
+
+http:
+  method: PUT
+  url: http://localhost:{{port-number}}/api/categories/{{category-id}}
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Updated Category",
+        "allocatedBudget": 150.0
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        if (!bru.getEnvVar('category-id')) {
+          throw new Error('category-id variable is not set; run create-category first.');
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true

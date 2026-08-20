@@ -1,18 +1,18 @@
 info:
-  name: create-budget
+  name: create-category
   type: http
-  seq: 1
+  seq: 4
 
 http:
   method: POST
-  url: http://localhost:{{port-number}}/api/budgets
+  url: http://localhost:{{port-number}}/api/categories
   body:
     type: json
     data: |-
       {
-        "month": 8,
-        "year": 2026,
-        "totalBudget": 80000
+        "budgetId": "{{budget-id}}",
+        "name": "Test Category",
+        "allocatedBudget": 100.0
       }
   auth: inherit
 
@@ -21,7 +21,7 @@ runtime:
     - type: after-response
       code: |-
         const response = res.getBody();
-        bru.setEnvVar("budget-id", response.id);
+        bru.setEnvVar("category-id", response.id);
 
 settings:
   encodeUrl: true

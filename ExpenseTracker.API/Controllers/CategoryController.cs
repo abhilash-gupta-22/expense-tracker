@@ -85,10 +85,9 @@ public class CategoryController : ControllerBase
         var category = new BudgetCategory
         {
             Name = request.Name,
-            AllocatedBudget = request.AllocatedBudget
+            AllocatedBudget = request.AllocatedBudget,
+            BudgetId = request.BudgetId
         };
-
-        _budgetService.AddCategory(budget, category);
 
         var result = _budgetService.AddCategory(budget, category);
 
@@ -99,7 +98,9 @@ public class CategoryController : ControllerBase
 
         await _categoryRepository.AddAsync(category).ConfigureAwait(false);
 
-        return CreatedAtAction(nameof(GetByIdAsync), new { id = category.Id }, category.ToResponse());
+        // Action names have the "Async" suffix trimmed by the framework when routing.
+        // Use the action name without the Async suffix to ensure link generation succeeds.
+        return CreatedAtAction(nameof(GetByIdAsync).Replace("Async", string.Empty), new { id = category.Id }, category.ToResponse());
     }
 
     [HttpPut("{id:guid}")]
