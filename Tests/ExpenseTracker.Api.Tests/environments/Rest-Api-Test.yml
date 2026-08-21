@@ -9,3 +9,12 @@ variables:
   - name: category-id
     value: ""
     description: ""
+  - name: expense-id
+    value: ""
+    description: ""
+  - name: expense-from
+    value: 2026-07-01
+    description: ""
+  - name: expense-to
+    value: 2028-01-01
+    description: ""

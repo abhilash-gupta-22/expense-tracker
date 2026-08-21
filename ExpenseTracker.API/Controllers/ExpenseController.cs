@@ -103,7 +103,8 @@ public class ExpenseController : ControllerBase
 
         var expense = new Expense
         {
-            BudgetCategoryId = request.CategoryId,
+            BudgetCategoryId = category.Id,
+            BudgetCategoryName = category.Name,
             Amount = request.Amount,
             ExpenseDate = request.ExpenseDate,
             Remarks = request.Remarks ?? string.Empty
@@ -113,7 +114,7 @@ public class ExpenseController : ControllerBase
 
         await _expenseRepository.AddAsync(expense).ConfigureAwait(false);
 
-        return CreatedAtAction(nameof(GetByIdAsync), new { id = expense.Id }, expense.ToResponse());
+        return CreatedAtAction(nameof(GetByIdAsync).Replace("Async", string.Empty), new { id = expense.Id }, expense.ToResponse());
     }
 
     [HttpPut("{id:guid}")]

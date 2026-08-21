@@ -19,15 +19,13 @@ public class ExpenseRepository : IExpenseRepository
 
     public async Task<IEnumerable<Expense>> GetAllAsync()
     {
-        return await _context.Expenses.Include(x => x.BudgetCategoryName)
-            .AsNoTracking().OrderByDescending(x => x.ExpenseDate)
+        return await _context.Expenses.AsNoTracking().OrderByDescending(x => x.ExpenseDate)
             .ToListAsync().ConfigureAwait(false);
     }
 
     public async Task<Expense?> GetByIdAsync(Guid id)
     {
-        return await _context.Expenses.Include(x => x.BudgetCategoryName)
-            .AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        return await _context.Expenses.FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public async Task AddAsync(Expense entity)
@@ -72,8 +70,7 @@ public class ExpenseRepository : IExpenseRepository
     {
         Guard.AgainstNull(categoryId, nameof(categoryId));
 
-        return await _context.Expenses.Include(x => x.BudgetCategoryName)
-            .Where(x => x.BudgetCategoryId == categoryId)
+        return await _context.Expenses.Where(x => x.BudgetCategoryId == categoryId)
             .OrderByDescending(x => x.ExpenseDate)
             .AsNoTracking()
             .ToListAsync().ConfigureAwait(false);
@@ -84,8 +81,7 @@ public class ExpenseRepository : IExpenseRepository
         Guard.AgainstNull(from, nameof(from));
         Guard.AgainstNull(to, nameof(to));
 
-        return await _context.Expenses.Include(x => x.BudgetCategoryName)
-            .Where(x => x.ExpenseDate >= from && x.ExpenseDate <= to)
+        return await _context.Expenses.Where(x => x.ExpenseDate >= from && x.ExpenseDate <= to)
             .OrderByDescending(x => x.ExpenseDate)
             .AsNoTracking()
             .ToListAsync().ConfigureAwait(false);

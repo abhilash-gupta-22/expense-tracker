@@ -1,0 +1,26 @@
+info:
+  name: delete-expense
+  type: http
+  seq: 7
+
+http:
+  method: DELETE
+  url: http://localhost:{{port-number}}/api/expenses/{{expense-id}}
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: Deletes an expense by id.
+
+expect:
+  - status: 204
+
+# Verify deletion
+verify:
+  - method: GET
+    url: /expenses/{{expense-id}}
+    expect:
+      - status: 404

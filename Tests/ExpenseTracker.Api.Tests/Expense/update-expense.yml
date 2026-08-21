@@ -1,0 +1,31 @@
+info:
+  name: update-expense
+  type: http
+  seq: 6
+
+http:
+  method: PUT
+  url: http://localhost:{{port-number}}/api/expenses/{{expense-id}}
+  body:
+    type: json
+    data: |-
+      {
+        "amount": 20.0,
+        "expenseDate": "2026-08-01T00:00:00Z",
+        "remarks": "Updated via Bruno"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        if (!bru.getEnvVar('expense-id')) {
+          throw new Error('expense-id variable is not set; run create-expense first.');
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
