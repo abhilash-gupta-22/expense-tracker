@@ -15,16 +15,19 @@ public class ExpenseController : ControllerBase
 {
     private readonly IExpenseRepository _expenseRepository;
     private readonly ICategoryRepository _categoryRepository;
+    private readonly IBudgetRepository _budgetRepository;
     private readonly IExpenseDomainService _expenseService;
 
-    public ExpenseController(IExpenseRepository expenseRepository, ICategoryRepository categoryRepository, IExpenseDomainService expenseService)
+    public ExpenseController(IExpenseRepository expenseRepository, ICategoryRepository categoryRepository, IBudgetRepository budgetRepository, IExpenseDomainService expenseService)
     {
         Guard.AgainstNull(expenseRepository, nameof(expenseRepository));
         Guard.AgainstNull(categoryRepository, nameof(categoryRepository));
+        Guard.AgainstNull(budgetRepository, nameof(budgetRepository));
         Guard.AgainstNull(expenseService, nameof(expenseService));
 
         _expenseRepository = expenseRepository;
         _categoryRepository = categoryRepository;
+        _budgetRepository = budgetRepository;
         _expenseService = expenseService;
     }
 
@@ -94,6 +97,19 @@ public class ExpenseController : ControllerBase
         if (category is null)
         {
             return BadRequest("Category not found.");
+        }
+
+        // Ensure the expense date falls within the parent budget's month and year
+        var budget = await _budgetRepository.GetByIdAsync(category.BudgetId).ConfigureAwait(false);
+
+        if (budget is null)
+        {
+            return BadRequest("Budget not found.");
+        }
+
+        if (request.ExpenseDate.Month != budget.Month || request.ExpenseDate.Year != budget.Year)
+        {
+            return BadRequest("Expense date lies beyond the budget month.");
         }
 
         if (!_expenseService.CanAddExpense(category, request.Amount).Value)
