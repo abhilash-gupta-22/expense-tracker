@@ -1,4 +1,5 @@
 using ExpenseTracker.Web.Components;
+using ExpenseTracker.Web.State;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +8,8 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 var app = builder.Build();
+
+builder.Services.AddScoped<BudgetState>();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

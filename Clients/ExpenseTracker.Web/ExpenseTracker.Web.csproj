@@ -8,19 +8,15 @@
 
   <ItemGroup>
     <Folder Include="Components\Dashboard\" />
-    <Folder Include="Components\Layout\" />
     <Folder Include="Components\Shared\" />
-    <Folder Include="Models\Budget\" />
     <Folder Include="Models\Category\" />
     <Folder Include="Models\Expense\" />
     <Folder Include="Models\Dashboard\" />
-    <Folder Include="State\" />
     <Folder Include="Pages\Dashboard\" />
     <Folder Include="Pages\Budgets\" />
     <Folder Include="Pages\Categories\" />
     <Folder Include="Pages\Expenses\" />
     <Folder Include="Pages\Reports\" />
-    <Folder Include="Services\Interfaces\" />
   </ItemGroup>
 
 </Project>
