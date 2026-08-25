@@ -3,7 +3,7 @@ using ExpenseTracker.Web.Services.Interfaces;
 
 namespace ExpenseTracker.Web.Services
 {
-    public class BudgetService : IBudgetService
+    public class BudgetApiClient : IBudgetApiClient
     {
         public Task<BudgetModel> CreateAsync(CreateBudgetModel model)
         {

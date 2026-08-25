@@ -2,7 +2,7 @@
 
 namespace ExpenseTracker.Web.Services.Interfaces;
 
-public interface IBudgetService
+public interface IBudgetApiClient
 {
     Task<IEnumerable<BudgetModel>> GetAllAsync();
 

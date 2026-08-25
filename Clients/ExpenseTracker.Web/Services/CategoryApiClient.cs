@@ -2,7 +2,7 @@
 
 namespace ExpenseTracker.Web.Services
 {
-    public class ExpenseService : IExpenseService
+    public class CategoryApiClient : ICategoryApiClient
     {
     }
 }

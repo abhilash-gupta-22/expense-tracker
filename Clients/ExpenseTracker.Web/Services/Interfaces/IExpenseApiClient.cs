@@ -1,6 +1,6 @@
 ﻿namespace ExpenseTracker.Web.Services.Interfaces
 {
-    public interface ICategoryService
+    public interface IExpenseApiClient
     {
     }
 }
