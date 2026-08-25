@@ -1,15 +1,22 @@
 using ExpenseTracker.Web.Components;
+using ExpenseTracker.Web.Services;
+using ExpenseTracker.Web.Services.Interfaces;
 using ExpenseTracker.Web.State;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+builder.Services.AddRazorComponents()    .AddInteractiveServerComponents();
 
 var app = builder.Build();
 
 builder.Services.AddScoped<BudgetState>();
+
+// Add API clients
+builder.Services.AddScoped<IBudgetApiClient, BudgetApiClient>();
+builder.Services.AddScoped<ICategoryApiClient, CategoryApiClient>();
+builder.Services.AddScoped<IExpenseApiClient, ExpenseApiClient>();
+builder.Services.AddScoped<IDashboardApiClient, DashboardApiClient>();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
