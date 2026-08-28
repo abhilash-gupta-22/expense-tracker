@@ -1,0 +1,13 @@
+﻿:root {
+    /* Colors */
+    --primary: #6d4aff;
+    --primary-light: #f0edff;
+    --background: #f7f8fc;
+    --surface: #ffffff;
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+    --border: #e5e7eb;
+    --danger: #ef4444;
+    /* Layout */
+    --border-radius: 12px;
+}

@@ -1,0 +1,416 @@
+﻿@page "/"
+@page "/dashboard"
+
+@using ExpenseTracker.Web.Models.Dashboard
+@using ExpenseTracker.Web.Services.Interfaces
+@using ExpenseTracker.Web.State
+
+@implements IDisposable
+
+@inject IDashboardApiClient DashboardApiClient
+@inject BudgetState BudgetState
+
+<PageTitle>Dashboard - Expense Tracker</PageTitle>
+
+<div class="dashboard-page">
+
+    <div class="page-header">
+        <div>
+            <h1>Dashboard</h1>
+
+            <p>
+                Here's an overview of your expenses for
+                @GetSelectedMonthDisplay().
+            </p>
+        </div>
+
+        <div class="month-display">
+            @GetSelectedMonthDisplay()
+        </div>
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="loading-container">
+            <p>Loading dashboard...</p>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(_errorMessage))
+    {
+        <div class="error-container">
+            <p>@_errorMessage</p>
+
+            <button class="retry-button"
+                    @onclick="LoadDashboardAsync">
+                Try Again
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="summary-grid">
+
+            <div class="summary-card">
+                <div class="summary-card-header">
+                    <span>Total Budget</span>
+                    <span class="summary-icon">₹</span>
+                </div>
+
+                <div class="summary-value">
+                    @FormatCurrency(_summary.TotalBudget)
+                </div>
+
+                <div class="summary-footer">
+                    Monthly budget
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-card-header">
+                    <span>Total Expenses</span>
+                    <span class="summary-icon">↗</span>
+                </div>
+
+                <div class="summary-value">
+                    @FormatCurrency(_summary.TotalExpenses)
+                </div>
+
+                <div class="summary-footer">
+                    @_summary.SpentPercentage% used
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-card-header">
+                    <span>Remaining</span>
+                    <span class="summary-icon">◷</span>
+                </div>
+
+                <div class="summary-value">
+                    @FormatCurrency(_summary.RemainingBudget)
+                </div>
+
+                <div class="summary-footer">
+                    Available to spend
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-card-header">
+                    <span>Categories</span>
+                    <span class="summary-icon">☰</span>
+                </div>
+
+                <div class="summary-value">
+                    @_summary.TotalCategories
+                </div>
+
+                <div class="summary-footer">
+                    Active categories
+                </div>
+            </div>
+
+        </div>
+
+        <div class="dashboard-content-grid">
+
+            <!-- Category Overview -->
+            <section class="dashboard-card category-overview">
+
+                <div class="card-header">
+                    <div>
+                        <h2>Budget Overview</h2>
+                        <p>Category-wise budget utilization</p>
+                    </div>
+                </div>
+
+                @if (!_categorySummaries.Any())
+                {
+                    <div class="empty-state">
+                        <p>No categories available for this month.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="category-list">
+
+                        @foreach (var category in _categorySummaries)
+                        {
+                            <div class="category-item">
+
+                                <div class="category-info">
+
+                                    <div class="category-name">
+                                        @category.CategoryName
+                                    </div>
+
+                                    <div class="category-values">
+                                        <span>
+                                            @FormatCurrency(category.TotalExpenses)
+                                        </span>
+
+                                        <span class="category-separator">
+                                            /
+                                        </span>
+
+                                        <span>
+                                            @FormatCurrency(category.AllocatedBudget)
+                                        </span>
+                                    </div>
+
+                                </div>
+
+                                <div class="category-progress">
+
+                                    <div class="progress-bar">
+
+                                        <div class="progress-value"
+                                             style="@GetProgressStyle(category.SpentPercentage)">
+                                        </div>
+
+                                    </div>
+
+                                    <span class="progress-percentage">
+                                        @category.SpentPercentage%
+                                    </span>
+
+                                </div>
+
+                            </div>
+                        }
+
+                    </div>
+                }
+
+            </section>
+
+            <!-- Recent Expenses -->
+            <section class="dashboard-card recent-expenses">
+
+                <div class="card-header">
+                    <div>
+                        <h2>Recent Expenses</h2>
+                        <p>Your latest transactions</p>
+                    </div>
+                </div>
+
+                @if (!_recentExpenses.Any())
+                {
+                    <div class="empty-state">
+                        <p>No expenses recorded for this month.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="expense-list">
+
+                        @foreach (var expense in _recentExpenses)
+                        {
+                            <div class="expense-item">
+
+                                <div class="expense-category-icon">
+                                    ₹
+                                </div>
+
+                                <div class="expense-details">
+
+                                    <div class="expense-category">
+                                        @expense.CategoryName
+                                    </div>
+
+                                    @if (!string.IsNullOrWhiteSpace(expense.Remarks))
+                                    {
+                                        <div class="expense-remarks">
+                                            @expense.Remarks
+                                        </div>
+                                    }
+
+                                </div>
+
+                                <div class="expense-amount">
+
+                                    <div>
+                                        @FormatCurrency(expense.Amount)
+                                    </div>
+
+                                    <div class="expense-date">
+                                        @expense.ExpenseDate.ToString("dd MMM")
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        }
+
+                    </div>
+                }
+
+            </section>
+
+        </div>
+
+        <!-- Expense Trend -->
+        <section class="dashboard-card expense-trend">
+
+            <div class="card-header">
+
+                <div>
+                    <h2>Expense Trend</h2>
+                    <p>Daily expenses for @GetSelectedMonthDisplay()</p>
+                </div>
+
+            </div>
+
+            @if (!_expenseTrend.Any())
+            {
+                <div class="empty-state">
+                    <p>No expense data available.</p>
+                </div>
+            }
+            else
+            {
+                <div class="trend-list">
+
+                    @foreach (var trend in _expenseTrend)
+                    {
+                        <div class="trend-item">
+
+                            <div class="trend-date">
+                                @trend.Date.ToString("dd MMM")
+                            </div>
+
+                            <div class="trend-bar-container">
+
+                                <div class="trend-bar"
+                                     style="@GetTrendStyle(trend.TotalAmount)">
+                                </div>
+
+                            </div>
+
+                            <div class="trend-amount">
+                                @FormatCurrency(trend.TotalAmount)
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+            }
+
+        </section>
+    }
+
+</div>
+
+@code {
+
+    private DashboardSummaryModel _summary = new();
+
+    private IEnumerable<CategorySummaryModel> _categorySummaries =
+        Enumerable.Empty<CategorySummaryModel>();
+
+    private IEnumerable<RecentExpenseModel> _recentExpenses =
+        Enumerable.Empty<RecentExpenseModel>();
+
+    private IEnumerable<ExpenseTrendModel> _expenseTrend =
+        Enumerable.Empty<ExpenseTrendModel>();
+
+    private bool _isLoading = true;
+
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        BudgetState.OnChange += OnBudgetStateChanged;
+
+        await LoadDashboardAsync();
+    }
+
+    private async void OnBudgetStateChanged()
+    {
+        await InvokeAsync(async () =>
+        {
+            await LoadDashboardAsync();
+            StateHasChanged();
+        });
+    }
+
+    private async Task LoadDashboardAsync()
+    {
+        try
+        {
+            _isLoading = true;
+            _errorMessage = null;
+
+            var month = BudgetState.SelectedMonth;
+            var year = BudgetState.SelectedYear;
+
+            _summary = await DashboardApiClient
+                .GetSummaryAsync(month, year);
+
+            _categorySummaries = await DashboardApiClient
+                .GetCategorySummaryAsync(month, year);
+
+            _recentExpenses = await DashboardApiClient
+                .GetRecentExpensesAsync(month, year, 5);
+
+            _expenseTrend = await DashboardApiClient
+                .GetExpenseTrendAsync(month, year);
+        }
+        catch (Exception)
+        {
+            _errorMessage =
+                "Unable to load the dashboard. Please try again.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private string GetSelectedMonthDisplay()
+    {
+        var date = new DateTime(
+            BudgetState.SelectedYear,
+            BudgetState.SelectedMonth,
+            1);
+
+        return date.ToString("MMMM yyyy");
+    }
+
+    private static string FormatCurrency(decimal amount)
+    {
+        return $"₹{amount:N2}";
+    }
+
+    private static string GetProgressStyle(decimal percentage)
+    {
+        var value = Math.Clamp(percentage, 0, 100);
+
+        return $"width: {value}%;";
+    }
+
+    private string GetTrendStyle(decimal amount)
+    {
+        if (!_expenseTrend.Any())
+        {
+            return "width: 0%;";
+        }
+
+        var maximumAmount = _expenseTrend.Max(x => x.TotalAmount);
+
+        if (maximumAmount == 0)
+        {
+            return "width: 0%;";
+        }
+
+        var percentage = (amount / maximumAmount) * 100;
+
+        return $"width: {percentage}%;";
+    }
+
+    public void Dispose()
+    {
+        BudgetState.OnChange -= OnBudgetStateChanged;
+    }
+}

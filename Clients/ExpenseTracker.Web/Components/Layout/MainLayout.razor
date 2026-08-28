@@ -1,5 +1,110 @@
-﻿<h3>MainLayout</h3>
+﻿@inherits LayoutComponentBase
 
-@code {
+<div class="app-layout">
 
-}
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+        <div class="sidebar-header">
+            <a href="/" class="brand">
+                <span class="brand-icon">₹</span>
+
+                <span class="brand-text">
+                    Expense Tracker
+                </span>
+            </a>
+        </div>
+
+        <nav class="navigation">
+
+            <div class="navigation-label">
+                MENU
+            </div>
+
+            <NavLink href="/"
+                     Match="NavLinkMatch.All"
+                     class="nav-item">
+                <span class="nav-icon">⌂</span>
+                <span>Dashboard</span>
+            </NavLink>
+
+            <NavLink href="/budgets"
+                     class="nav-item">
+                <span class="nav-icon">▣</span>
+                <span>Budgets</span>
+            </NavLink>
+
+            <NavLink href="/categories"
+                     class="nav-item">
+                <span class="nav-icon">☰</span>
+                <span>Categories</span>
+            </NavLink>
+
+            <NavLink href="/expenses"
+                     class="nav-item">
+                <span class="nav-icon">↗</span>
+                <span>Expenses</span>
+            </NavLink>
+
+            <NavLink href="/reports"
+                     class="nav-item">
+                <span class="nav-icon">◫</span>
+                <span>Reports</span>
+            </NavLink>
+
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="footer-text">
+                Expense Tracker
+            </div>
+
+            <div class="footer-version">
+                Version 1.0
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-container">
+
+        <!-- Header -->
+        <header class="top-header">
+
+            <div class="header-title">
+                <span>Personal Finance Manager</span>
+            </div>
+
+            <div class="header-actions">
+
+                <button type="button"
+                        class="header-button"
+                        title="Notifications">
+                    🔔
+                </button>
+
+                <div class="user-profile">
+
+                    <div class="user-avatar">
+                        A
+                    </div>
+
+                    <div class="user-info">
+                        <span class="user-name">User</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+        <!-- Page Content -->
+        <main class="page-content">
+            @Body
+        </main>
+
+    </div>
+
+</div>
