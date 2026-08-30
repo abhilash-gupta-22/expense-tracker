@@ -9,8 +9,6 @@
   <ItemGroup>
     <Folder Include="Components\Dashboard\" />
     <Folder Include="Components\Shared\" />
-    <Folder Include="Pages\Budgets\" />
-    <Folder Include="Pages\Categories\" />
     <Folder Include="Pages\Expenses\" />
     <Folder Include="Pages\Reports\" />
   </ItemGroup>

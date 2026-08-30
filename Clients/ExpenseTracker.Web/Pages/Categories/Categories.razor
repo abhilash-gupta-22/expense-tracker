@@ -1,0 +1,547 @@
+﻿@page "/categories"
+
+@using ExpenseTracker.Web.Models.Budget
+@using ExpenseTracker.Web.Models.Category
+@using ExpenseTracker.Web.Services.Interfaces
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.WebUtilities
+
+@inject ICategoryApiClient CategoryApiClient
+@inject IBudgetApiClient BudgetApiClient
+@inject NavigationManager NavigationManager
+
+<PageTitle>Categories - Expense Tracker</PageTitle>
+
+<div class="categories-page">
+
+    <div class="page-header">
+
+        <div>
+            <h1>Categories</h1>
+
+            <p>
+                Manage budget categories and their allocations.
+            </p>
+        </div>
+
+        <button class="primary-button"
+                disabled="@(_selectedBudgetId == Guid.Empty)"
+                @onclick="OpenCreateForm">
+            + Add Category
+        </button>
+
+    </div>
+
+    <!-- Budget Selector -->
+
+    <div class="budget-selector-card">
+
+        <label>
+            Budget
+        </label>
+
+        <select value="@_selectedBudgetId"
+                @onchange="BudgetChangedAsync">
+
+            <option value="@Guid.Empty">
+                Select a budget
+            </option>
+
+            @foreach (var budget in _budgets)
+            {
+                <option value="@budget.Id">
+                    @GetBudgetDisplayName(budget)
+                </option>
+            }
+
+        </select>
+
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="loading-state">
+            Loading categories...
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(_errorMessage))
+    {
+        <div class="error-state">
+
+            <p>@_errorMessage</p>
+
+            <button class="secondary-button"
+                    @onclick="LoadCategoriesAsync">
+                Try Again
+            </button>
+
+        </div>
+    }
+    else if (_selectedBudgetId == Guid.Empty)
+    {
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                ☰
+            </div>
+
+            <h3>Select a budget</h3>
+
+            <p>
+                Select a monthly budget to manage its categories.
+            </p>
+
+        </div>
+    }
+    else
+    {
+        <div class="category-content">
+
+            <div class="category-summary">
+
+                <div>
+                    <span class="summary-label">
+                        Allocated
+                    </span>
+
+                    <strong>
+                        @FormatCurrency(
+                            _categories.Sum(x => x.AllocatedBudget))
+                    </strong>
+                </div>
+
+                <div>
+                    <span class="summary-label">
+                        Categories
+                    </span>
+
+                    <strong>
+                        @_categories.Count()
+                    </strong>
+                </div>
+
+                <div>
+                    <span class="summary-label">
+                        Monthly Budget
+                    </span>
+
+                    <strong>
+                        @FormatCurrency(
+                            _selectedBudget?.TotalBudget ?? 0)
+                    </strong>
+                </div>
+
+            </div>
+
+            <div class="category-list-card">
+
+                <div class="card-header">
+
+                    <div>
+                        <h2>Budget Categories</h2>
+
+                        <p>
+                            Define how your monthly budget is allocated.
+                        </p>
+                    </div>
+
+                </div>
+
+                @if (!_categories.Any())
+                {
+                    <div class="empty-state">
+
+                        <div class="empty-icon">
+                            ☰
+                        </div>
+
+                        <h3>No categories found</h3>
+
+                        <p>
+                            Add categories such as Groceries, Bills,
+                            EMI, Shopping, etc.
+                        </p>
+
+                        <button class="primary-button"
+                                @onclick="OpenCreateForm">
+                            + Add Category
+                        </button>
+
+                    </div>
+                }
+                else
+                {
+                    <div class="category-grid">
+
+                        @foreach (var category in _categories)
+                        {
+                            <div class="category-card">
+
+                                <div class="category-card-header">
+
+                                    <div class="category-icon">
+                                        ₹
+                                    </div>
+
+                                    <div class="category-actions">
+
+                                        <button @onclick="() => OpenEditForm(category)">
+                                            Edit
+                                        </button>
+
+                                        <button @onclick="() => DeleteCategoryAsync(category)">
+                                            Delete
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="category-name">
+                                    @category.Name
+                                </div>
+
+                                <div class="category-budget">
+                                    @FormatCurrency(category.AllocatedBudget)
+                                </div>
+
+                                <div class="allocation-label">
+                                    Allocated budget
+                                </div>
+
+                            </div>
+                        }
+
+                    </div>
+                }
+
+            </div>
+
+        </div>
+    }
+
+</div>
+
+@if (_showForm)
+{
+    <div class="modal-backdrop">
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <h2>
+                    @(_isEditMode
+                        ? "Edit Category"
+                        : "Add Category")
+                </h2>
+
+                <button class="close-button"
+                        @onclick="CloseForm">
+                    ×
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="form-group">
+
+                    <label>
+                        Category Name
+                    </label>
+
+                    <input type="text"
+                           @bind="_form.Name"
+                           placeholder="e.g. Groceries" />
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Allocated Budget
+                    </label>
+
+                    <input type="number"
+                           step="0.01"
+                           min="0"
+                           @bind="_form.AllocatedBudget" />
+
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(_formError))
+                {
+                    <div class="form-error">
+                        @_formError
+                    </div>
+                }
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button class="secondary-button"
+                        @onclick="CloseForm">
+                    Cancel
+                </button>
+
+                <button class="primary-button"
+                        disabled="@_isSaving"
+                        @onclick="SaveCategoryAsync">
+
+                    @(_isSaving
+                        ? "Saving..."
+                        : "Save Category")
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+@code {
+
+    private IEnumerable<BudgetModel> _budgets = Enumerable.Empty<BudgetModel>();
+
+    private IEnumerable<CategoryModel> _categories = Enumerable.Empty<CategoryModel>();
+
+    private BudgetModel? _selectedBudget;
+
+    private Guid _selectedBudgetId;
+
+    private CreateCategoryModel _form = new();
+
+    private bool _isLoading;
+    private bool _isSaving;
+    private bool _showForm;
+    private bool _isEditMode;
+
+    private Guid _editingCategoryId;
+
+    private string? _errorMessage;
+    private string? _formError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBudgetsAsync();
+
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+
+        var query = QueryHelpers.ParseQuery(uri.Query);
+
+        if (query.TryGetValue("budgetId", out var budgetIdValue) && Guid.TryParse(budgetIdValue.FirstOrDefault(), out var budgetId))
+        {
+            _selectedBudgetId = budgetId;
+
+            await SelectBudgetAsync();
+        }
+    }
+
+    private async Task LoadBudgetsAsync()
+    {
+        try
+        {
+            _budgets = await BudgetApiClient.GetAllAsync();
+        }
+        catch (Exception)
+        {
+            _errorMessage = "Unable to load budgets.";
+        }
+    }
+
+    private async Task BudgetChangedAsync(
+        ChangeEventArgs args)
+    {
+        if (Guid.TryParse(args.Value?.ToString(), out var budgetId))
+        {
+            _selectedBudgetId = budgetId;
+        }
+        else
+        {
+            _selectedBudgetId = Guid.Empty;
+        }
+
+        await SelectBudgetAsync();
+    }
+
+    private async Task SelectBudgetAsync()
+    {
+        _errorMessage = null;
+
+        if (_selectedBudgetId == Guid.Empty)
+        {
+            _categories = Enumerable.Empty<CategoryModel>();
+
+            _selectedBudget = null;
+
+            return;
+        }
+
+        try
+        {
+            _isLoading = true;
+
+            _selectedBudget = await BudgetApiClient.GetByIdAsync(_selectedBudgetId);
+
+            await LoadCategoriesAsync();
+        }
+        catch (Exception)
+        {
+            _errorMessage = "Unable to load the selected budget.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        if (_selectedBudgetId == Guid.Empty)
+        {
+            return;
+        }
+
+        try
+        {
+            _isLoading = true;
+
+            _categories = await CategoryApiClient.GetByBudgetIdAsync(_selectedBudgetId);
+        }
+        catch (Exception)
+        {
+            _errorMessage = "Unable to load categories.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void OpenCreateForm()
+    {
+        _form = new CreateCategoryModel
+        {
+            BudgetId = _selectedBudgetId,
+            Name = string.Empty,
+            AllocatedBudget = 0
+        };
+
+        _editingCategoryId = Guid.Empty;
+
+        _isEditMode = false;
+        _formError = null;
+        _showForm = true;
+    }
+
+    private void OpenEditForm(CategoryModel category)
+    {
+        _form = new CreateCategoryModel
+        {
+            BudgetId = _selectedBudgetId,
+            Name = category.Name,
+            AllocatedBudget = category.AllocatedBudget
+        };
+
+        _editingCategoryId = category.Id;
+
+        _isEditMode = true;
+        _formError = null;
+        _showForm = true;
+    }
+
+    private async Task SaveCategoryAsync()
+    {
+        try
+        {
+            _formError = null;
+
+            if (string.IsNullOrWhiteSpace(_form.Name))
+            {
+                _formError = "Category name is required.";
+
+                return;
+            }
+
+            if (_form.AllocatedBudget <= 0)
+            {
+                _formError = "Allocated budget must be greater than zero.";
+
+                return;
+            }
+
+            _isSaving = true;
+
+            if (_isEditMode)
+            {
+                var updateModel = new UpdateCategoryModel
+                {
+                    Name = _form.Name,
+                    AllocatedBudget = _form.AllocatedBudget
+                };
+
+                await CategoryApiClient.UpdateAsync(_editingCategoryId, updateModel);
+            }
+            else
+            {
+                await CategoryApiClient.CreateAsync(_form);
+            }
+
+            _showForm = false;
+
+            await LoadCategoriesAsync();
+
+            // Refresh selected budget because category collection
+            // may have changed.
+            _selectedBudget =
+                await BudgetApiClient.GetByIdAsync(_selectedBudgetId);
+        }
+        catch (Exception)
+        {
+            _formError = "Unable to save the category.";
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private async Task DeleteCategoryAsync(CategoryModel category)
+    {
+        try
+        {
+            await CategoryApiClient.DeleteAsync(category.Id);
+
+            await LoadCategoriesAsync();
+        }
+        catch (Exception)
+        {
+            _errorMessage = "Unable to delete the category.";
+        }
+    }
+
+    private void CloseForm()
+    {
+        _showForm = false;
+        _formError = null;
+    }
+
+    private static string GetBudgetDisplayName(BudgetModel budget)
+    {
+        var month = new DateTime(
+            budget.Year,
+            budget.Month,
+            1).ToString("MMMM");
+
+        return $"{month} {budget.Year} - " + $"{FormatCurrency(budget.TotalBudget)}";
+    }
+
+    private static string FormatCurrency(decimal amount)
+    {
+        return $"₹{amount:N2}";
+    }
+}

@@ -1,0 +1,426 @@
+﻿@page "/budgets"
+
+@using ExpenseTracker.Web.Models.Budget
+@using ExpenseTracker.Web.Services.Interfaces
+
+@inject IBudgetApiClient BudgetApiClient
+@inject NavigationManager NavigationManager
+
+<PageTitle>Budgets - Expense Tracker</PageTitle>
+
+<div class="budgets-page">
+
+    <div class="page-header">
+
+        <div>
+            <h1>Budgets</h1>
+
+            <p>
+                Manage your monthly budgets and allocations.
+            </p>
+        </div>
+
+        <button class="primary-button"
+                @onclick="OpenCreateForm">
+            + Add Budget
+        </button>
+
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="loading-state">
+            Loading budgets...
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(_errorMessage))
+    {
+        <div class="error-state">
+
+            <p>@_errorMessage</p>
+
+            <button class="secondary-button"
+                    @onclick="LoadBudgetsAsync">
+                Try Again
+            </button>
+
+        </div>
+    }
+    else
+    {
+        <div class="budget-list-card">
+
+            <div class="card-header">
+
+                <div>
+                    <h2>Monthly Budgets</h2>
+
+                    <p>
+                        @(_budgets.Count()) budget(s)
+                    </p>
+                </div>
+
+            </div>
+
+            @if (!_budgets.Any())
+            {
+                <div class="empty-state">
+
+                    <div class="empty-icon">
+                        ₹
+                    </div>
+
+                    <h3>No budgets found</h3>
+
+                    <p>
+                        Create your first monthly budget to start
+                        tracking your expenses.
+                    </p>
+
+                    <button class="primary-button"
+                            @onclick="OpenCreateForm">
+                        + Create Budget
+                    </button>
+
+                </div>
+            }
+            else
+            {
+                <div class="budget-table-container">
+
+                    <table class="budget-table">
+
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th>Total Budget</th>
+                                <th>Categories</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var budget in _budgets
+                                .OrderByDescending(x => x.Year)
+                                .ThenByDescending(x => x.Month))
+                            {
+                                <tr>
+
+                                    <td>
+                                        <div class="month-cell">
+                                            <strong>
+                                                @GetMonthName(
+                                                    budget.Month)
+                                            </strong>
+
+                                            <span>
+                                                @budget.Year
+                                            </span>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <span class="amount">
+                                            @FormatCurrency(budget.TotalBudget)
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="category-count">
+                                            @budget.BudgetCategories.Count
+                                        </span>
+                                    </td>
+
+                                    <td>
+
+                                        <div class="action-buttons">
+
+                                            <button class="action-button"
+                                                    title="View"
+                                                    @onclick="() => ViewBudget(budget.Id)">
+                                                View
+                                            </button>
+
+                                            <button class="action-button"
+                                                    title="Edit"
+                                                    @onclick="() => OpenEditForm(budget)">
+                                                Edit
+                                            </button>
+
+                                            <button class="action-button delete"
+                                                    title="Delete"
+                                                    @onclick="() => DeleteBudgetAsync(budget)">
+                                                Delete
+                                            </button>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+
+        </div>
+    }
+
+</div>
+
+@if (_showForm)
+{
+    <div class="modal-backdrop">
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <h2>
+                    @(_isEditMode
+                        ? "Edit Budget"
+                        : "Create Budget")
+                </h2>
+
+                <button class="close-button"
+                        @onclick="CloseForm">
+                    ×
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="form-group">
+
+                    <label>
+                        Month
+                    </label>
+
+                    <select @bind="_form.Month"
+                            disabled="@_isEditMode">
+
+                        @for (var month = 1; month <= 12; month++)
+                        {
+                            <option value="@month">
+                                @GetMonthName(month)
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Year
+                    </label>
+
+                    <input type="number"
+                           @bind="_form.Year"
+                           disabled="@_isEditMode" />
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Total Budget
+                    </label>
+
+                    <input type="number"
+                           step="0.01"
+                           min="0"
+                           @bind="_form.TotalBudget" />
+
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(_formError))
+                {
+                    <div class="form-error">
+                        @_formError
+                    </div>
+                }
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button class="secondary-button"
+                        @onclick="CloseForm">
+                    Cancel
+                </button>
+
+                <button class="primary-button"
+                        disabled="@_isSaving"
+                        @onclick="SaveBudgetAsync">
+
+                    @(_isSaving
+                        ? "Saving..."
+                        : "Save Budget")
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+@code {
+
+    private IEnumerable<BudgetModel> _budgets = Enumerable.Empty<BudgetModel>();
+
+    private CreateBudgetModel _form = new();
+
+    private bool _isLoading;
+    private bool _isSaving;
+    private bool _showForm;
+    private bool _isEditMode;
+
+    private Guid _editingBudgetId;
+
+    private string? _errorMessage;
+    private string? _formError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBudgetsAsync();
+    }
+
+    private async Task LoadBudgetsAsync()
+    {
+        try
+        {
+            _isLoading = true;
+            _errorMessage = null;
+
+            _budgets = await BudgetApiClient.GetAllAsync();
+        }
+        catch (Exception)
+        {
+            _errorMessage =
+                "Unable to load budgets. Please try again.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void OpenCreateForm()
+    {
+        var today = DateTime.Today;
+
+        _form = new CreateBudgetModel
+        {
+            Month = today.Month,
+            Year = today.Year,
+            TotalBudget = 0
+        };
+
+        _isEditMode = false;
+        _editingBudgetId = Guid.Empty;
+        _formError = null;
+        _showForm = true;
+    }
+
+    private void OpenEditForm(BudgetModel budget)
+    {
+        _form = new CreateBudgetModel
+        {
+            Month = budget.Month,
+            Year = budget.Year,
+            TotalBudget = budget.TotalBudget
+        };
+
+        _editingBudgetId = budget.Id;
+        _isEditMode = true;
+        _formError = null;
+        _showForm = true;
+    }
+
+    private async Task SaveBudgetAsync()
+    {
+        try
+        {
+            _isSaving = true;
+            _formError = null;
+
+            if (_form.TotalBudget <= 0)
+            {
+                _formError = "Total budget must be greater than zero.";
+
+                return;
+            }
+
+            if (_isEditMode)
+            {
+                var updateModel = new UpdateBudgetModel
+                {
+                    TotalBudget = _form.TotalBudget
+                };
+
+                await BudgetApiClient.UpdateAsync(_editingBudgetId, updateModel);
+            }
+            else
+            {
+                await BudgetApiClient.CreateAsync(_form);
+            }
+
+            _showForm = false;
+
+            await LoadBudgetsAsync();
+        }
+        catch (Exception)
+        {
+            _formError = "Unable to save the budget. Please try again.";
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private async Task DeleteBudgetAsync(BudgetModel budget)
+    {
+        try
+        {
+            await BudgetApiClient.DeleteAsync(budget.Id);
+
+            await LoadBudgetsAsync();
+        }
+        catch (Exception)
+        {
+            _errorMessage = "Unable to delete the budget.";
+        }
+    }
+
+    private void CloseForm()
+    {
+        _showForm = false;
+        _formError = null;
+    }
+
+    private void ViewBudget(Guid id)
+    {
+        NavigationManager.NavigateTo($"/categories?budgetId={id}");
+    }
+
+    private static string GetMonthName(int month)
+    {
+        return new DateTime(2000, month, 1).ToString("MMMM");
+    }
+
+    private static string FormatCurrency(decimal amount)
+    {
+        return $"₹{amount:N2}";
+    }
+}
