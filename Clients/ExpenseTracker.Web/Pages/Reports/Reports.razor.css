@@ -1,0 +1,241 @@
+﻿.reports-page {
+    padding: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 2rem;
+    }
+
+    .page-header p {
+        margin-top: 0.4rem;
+        color: var(--text-secondary);
+    }
+
+.report-filter select {
+    min-width: 280px;
+    padding: 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+}
+
+/* Summary */
+
+.report-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.summary-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius);
+}
+
+    .summary-card span {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+    }
+
+    .summary-card strong {
+        font-size: 1.3rem;
+    }
+
+/* Report card */
+
+.report-card {
+    margin-bottom: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.1rem;
+    }
+
+    .card-header p {
+        margin: 0.35rem 0 0;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+    }
+
+/* Category report */
+
+.category-report-list {
+    padding: 1rem 1.5rem;
+}
+
+.category-report-row {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+    .category-report-row:last-child {
+        border-bottom: none;
+    }
+
+.category-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.6rem;
+}
+
+    .category-info span {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+    }
+
+.progress-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--background);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-value {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 10px;
+}
+
+.percentage {
+    width: 45px;
+    text-align: right;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+/* Transactions */
+
+.transaction-list {
+    padding: 0 1.5rem;
+}
+
+.transaction-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+    .transaction-row:last-child {
+        border-bottom: none;
+    }
+
+    .transaction-row > div:first-child {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .transaction-row span {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+    }
+
+.transaction-amount {
+    font-weight: 700;
+}
+
+/* Empty */
+
+.empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    background: var(--primary-light);
+    font-size: 1.4rem;
+}
+
+.empty-small {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.loading-state,
+.error-state {
+    padding: 3rem;
+    text-align: center;
+}
+
+.error-state {
+    color: var(--danger);
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+
+    .report-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 700px) {
+
+    .page-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .report-filter,
+    .report-filter select {
+        width: 100%;
+    }
+
+        .report-filter select {
+            min-width: 0;
+        }
+
+    .report-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .category-info {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+}

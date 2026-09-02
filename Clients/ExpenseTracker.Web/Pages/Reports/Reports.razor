@@ -1,0 +1,412 @@
+﻿@page "/reports"
+
+@using ExpenseTracker.Web.Models.Budget
+@using ExpenseTracker.Web.Models.Category
+@using ExpenseTracker.Web.Models.Expense
+@using ExpenseTracker.Web.Services.Interfaces
+
+@inject IBudgetApiClient BudgetApiClient
+@inject ICategoryApiClient CategoryApiClient
+@inject IExpenseApiClient ExpenseApiClient
+
+<PageTitle>Reports - Expense Tracker</PageTitle>
+
+<div class="reports-page">
+
+    <!-- Header -->
+
+    <div class="page-header">
+
+        <div>
+            <h1>Reports</h1>
+
+            <p>
+                Analyse your budget and spending.
+            </p>
+        </div>
+
+        <div class="report-filter">
+
+            <select value="@_selectedBudgetId"
+                    @onchange="BudgetChangedAsync">
+
+                <option value="@Guid.Empty">
+                    Select Budget
+                </option>
+
+                @foreach (var budget in _budgets)
+                {
+                    <option value="@budget.Id">
+                        @GetBudgetDisplayName(budget)
+                    </option>
+                }
+
+            </select>
+
+        </div>
+
+    </div>
+
+    @if (_selectedBudgetId == Guid.Empty)
+    {
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                📊
+            </div>
+
+            <h3>Select a budget</h3>
+
+            <p>
+                Select a monthly budget to view its reports.
+            </p>
+
+        </div>
+    }
+    else if (_isLoading)
+    {
+        <div class="loading-state">
+            Loading report...
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(_errorMessage))
+    {
+        <div class="error-state">
+            @_errorMessage
+        </div>
+    }
+    else
+    {
+        <!-- Summary -->
+
+        <div class="report-summary">
+
+            <div class="summary-card">
+
+                <span>
+                    Total Budget
+                </span>
+
+                <strong>
+                    @FormatCurrency(
+                        _selectedBudget?.TotalBudget ?? 0)
+                </strong>
+
+            </div>
+
+            <div class="summary-card">
+
+                <span>
+                    Total Spent
+                </span>
+
+                <strong>
+                    @FormatCurrency(_totalExpenses)
+                </strong>
+
+            </div>
+
+            <div class="summary-card">
+
+                <span>
+                    Remaining
+                </span>
+
+                <strong>
+                    @FormatCurrency(_remainingAmount)
+                </strong>
+
+            </div>
+
+            <div class="summary-card">
+
+                <span>
+                    Usage
+                </span>
+
+                <strong>
+                    @_budgetUsage.ToString("0.0")%
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- Category Spending -->
+
+        <div class="report-card">
+
+            <div class="card-header">
+
+                <div>
+                    <h2>Category Spending</h2>
+
+                    <p>
+                        Expense distribution across categories.
+                    </p>
+                </div>
+
+            </div>
+
+            @if (!_categoryReports.Any())
+            {
+                <div class="empty-small">
+                    No category data available.
+                </div>
+            }
+            else
+            {
+                <div class="category-report-list">
+
+                    @foreach (var category in _categoryReports)
+                    {
+                        <div class="category-report-row">
+
+                            <div class="category-info">
+
+                                <strong>
+                                    @category.Name
+                                </strong>
+
+                                <span>
+                                    @FormatCurrency(
+                                        category.SpentAmount)
+                                    spent of
+                                    @FormatCurrency(
+                                        category.AllocatedBudget)
+                                </span>
+
+                            </div>
+
+                            <div class="progress-container">
+
+                                <div class="progress-bar">
+
+                                    <div class="progress-value"
+                                         style="width:@GetPercentage(
+                                                                                                                                                                                                                                                                                             category.SpentAmount,
+                                                                                                                                                                                                                                                                                             category.AllocatedBudget)%">
+                                    </div>
+
+                                </div>
+
+                                <span class="percentage">
+                                    @GetPercentage(
+                                        category.SpentAmount,
+                                        category.AllocatedBudget)
+                                    %
+                                </span>
+
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+            }
+
+        </div>
+
+
+        <!-- Recent Transactions -->
+
+        <div class="report-card">
+
+            <div class="card-header">
+
+                <div>
+                    <h2>Recent Transactions</h2>
+
+                    <p>
+                        Latest expenses for this budget.
+                    </p>
+                </div>
+
+            </div>
+
+            @if (!_expenses.Any())
+            {
+                <div class="empty-small">
+                    No expenses recorded.
+                </div>
+            }
+            else
+            {
+                <div class="transaction-list">
+
+                    @foreach (var expense in _expenses
+                        .OrderByDescending(x => x.ExpenseDate)
+                        .Take(10))
+                    {
+                        <div class="transaction-row">
+
+                            <div>
+
+                                <strong>
+                                    @expense.BudgetCategoryName
+                                </strong>
+
+                                <span>
+                                    @expense.ExpenseDate.ToString(
+                                        "dd MMM yyyy")
+                                </span>
+
+                            </div>
+
+                            <div class="transaction-amount">
+
+                                @FormatCurrency(
+                                    expense.Amount)
+
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+            }
+
+        </div>
+
+    }
+
+</div>
+
+
+@code {
+
+    private IEnumerable<BudgetModel> _budgets = Enumerable.Empty<BudgetModel>();
+    private IEnumerable<CategoryModel> _categories = Enumerable.Empty<CategoryModel>();
+    private IEnumerable<ExpenseModel> _expenses = Enumerable.Empty<ExpenseModel>();
+    private List<CategoryReportModel> _categoryReports = new();
+
+    private BudgetModel? _selectedBudget;
+    private Guid _selectedBudgetId;
+    private decimal _totalExpenses;
+    private decimal _remainingAmount;
+    private decimal _budgetUsage;
+    private bool _isLoading;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBudgetsAsync().ConfigureAwait(false);
+    }
+
+    private async Task LoadBudgetsAsync()
+    {
+        try
+        {
+            _budgets = await BudgetApiClient.GetAllAsync().ConfigureAwait(false);
+        }
+        catch
+        {
+            _errorMessage = "Unable to load budgets.";
+        }
+    }
+
+    private async Task BudgetChangedAsync(ChangeEventArgs args)
+    {
+        if (Guid.TryParse(args.Value?.ToString(), out var budgetId))
+        {
+            _selectedBudgetId = budgetId;
+        }
+        else
+        {
+            _selectedBudgetId = Guid.Empty;
+        }
+
+        if (_selectedBudgetId != Guid.Empty)
+        {
+            await GenerateReportAsync().ConfigureAwait(false);
+        }
+    }
+
+    private async Task GenerateReportAsync()
+    {
+        try
+        {
+            _isLoading = true;
+            _errorMessage = null;
+
+            _selectedBudget = await BudgetApiClient.GetByIdAsync(_selectedBudgetId).ConfigureAwait(false);
+            _categories = await CategoryApiClient.GetByBudgetIdAsync(_selectedBudgetId).ConfigureAwait(false);
+            _expenses = await ExpenseApiClient.GetByBudgetIdAsync(_selectedBudgetId).ConfigureAwait(false);
+
+            CalculateReport();
+        }
+        catch
+        {
+            _errorMessage = "Unable to generate report.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void CalculateReport()
+    {
+        _totalExpenses = _expenses.Sum(x => x.Amount);
+
+        var totalBudget = _selectedBudget?.TotalBudget ?? 0;
+
+        _remainingAmount = totalBudget - _totalExpenses;
+
+        _budgetUsage = totalBudget <= 0
+                ? 0
+                : (_totalExpenses / totalBudget) * 100;
+
+        _categoryReports = _categories.Select(category =>
+            {
+                var spent = _expenses.Where(x => x.BudgetCategoryId == category.Id)
+                            .Sum(x => x.Amount);
+
+                return new CategoryReportModel
+                {
+                    Id = category.Id,
+                    Name = category.Name,
+                    AllocatedBudget = category.AllocatedBudget,
+                    SpentAmount = spent
+                };
+
+            }).ToList();
+    }
+
+    private static decimal GetPercentage(decimal spent, decimal allocated)
+    {
+        if (allocated <= 0)
+        {
+            return 0;
+        }
+
+        return Math.Round((spent / allocated) * 100, 1);
+    }
+
+    private static string GetBudgetDisplayName(BudgetModel budget)
+    {
+        var month = new DateTime(
+            2000,
+            budget.Month,
+            1).ToString("MMMM");
+
+        return $"{month} {budget.Year} - " + $"{FormatCurrency(budget.TotalBudget)}";
+    }
+
+    private static string FormatCurrency(decimal amount)
+    {
+        return $"₹{amount:N2}";
+    }
+
+    private class CategoryReportModel
+    {
+        public Guid Id { get; set; }
+
+        public string Name { get; set; } = string.Empty;
+
+        public decimal AllocatedBudget { get; set; }
+
+        public decimal SpentAmount { get; set; }
+    }
+}
