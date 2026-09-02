@@ -1,0 +1,665 @@
+﻿@page "/expenses"
+
+@using ExpenseTracker.Web.Models.Budget
+@using ExpenseTracker.Web.Models.Category
+@using ExpenseTracker.Web.Models.Expense
+@using ExpenseTracker.Web.Services.Interfaces
+
+@inject IBudgetApiClient BudgetApiClient
+@inject ICategoryApiClient CategoryApiClient
+@inject IExpenseApiClient ExpenseApiClient
+
+<PageTitle>Expenses - Expense Tracker</PageTitle>
+
+<div class="expenses-page">
+
+    <!-- Page Header -->
+
+    <div class="page-header">
+
+        <div>
+            <h1>Expenses</h1>
+
+            <p>
+                Track and manage your monthly expenses.
+            </p>
+        </div>
+
+        <button class="primary-button"
+                disabled="@(_selectedCategoryId == Guid.Empty)"
+                @onclick="OpenCreateForm">
+            + Add Expense
+        </button>
+
+    </div>
+
+    <!-- Filters -->
+
+    <div class="filter-card">
+
+        <div class="filter-group">
+
+            <label>Budget</label>
+
+            <select value="@_selectedBudgetId"
+                    @onchange="BudgetChangedAsync">
+
+                <option value="@Guid.Empty">
+                    Select Budget
+                </option>
+
+                @foreach (var budget in _budgets)
+                {
+                    <option value="@budget.Id">
+                        @GetBudgetDisplayName(budget)
+                    </option>
+                }
+
+            </select>
+
+        </div>
+
+        <div class="filter-group">
+
+            <label>Category</label>
+
+            <select value="@_selectedCategoryId"
+                    @onchange="CategoryChangedAsync"
+                    disabled="@(_selectedBudgetId == Guid.Empty)">
+
+                <option value="@Guid.Empty">
+                    All Categories
+                </option>
+
+                @foreach (var category in _categories)
+                {
+                    <option value="@category.Id">
+                        @category.Name
+                    </option>
+                }
+
+            </select>
+
+        </div>
+
+    </div>
+
+    <!-- Summary -->
+    @if (_selectedBudgetId != Guid.Empty)
+    {
+        <div class="expense-summary">
+
+            <div class="summary-card">
+
+                <span class="summary-label">
+                    Total Budget
+                </span>
+
+                <strong>
+                    @FormatCurrency(
+                        _selectedBudget?.TotalBudget ?? 0)
+                </strong>
+
+            </div>
+
+            <div class="summary-card">
+
+                <span class="summary-label">
+                    Total Expenses
+                </span>
+
+                <strong>
+                    @FormatCurrency(
+                        _expenses.Sum(x => x.Amount))
+                </strong>
+
+            </div>
+
+            <div class="summary-card">
+
+                <span class="summary-label">
+                    Remaining
+                </span>
+
+                <strong>
+                    @FormatCurrency(
+                        (_selectedBudget?.TotalBudget ?? 0)
+                        - _expenses.Sum(x => x.Amount))
+                </strong>
+
+            </div>
+
+            <div class="summary-card">
+
+                <span class="summary-label">
+                    Transactions
+                </span>
+
+                <strong>
+                    @_expenses.Count()
+                </strong>
+
+            </div>
+
+        </div>
+    }
+
+    <!-- Expense List -->
+
+    <div class="expense-list-card">
+
+        <div class="card-header">
+
+            <div>
+                <h2>Expense Transactions</h2>
+
+                <p>
+                    Your recorded expenses for the selected budget.
+                </p>
+            </div>
+
+        </div>
+
+        @if (_isLoading)
+        {
+            <div class="loading-state">
+                Loading expenses...
+            </div>
+        }
+        else if (!string.IsNullOrWhiteSpace(_errorMessage))
+        {
+            <div class="error-state">
+
+                <p>@_errorMessage</p>
+
+                <button class="secondary-button"
+                        @onclick="LoadExpensesAsync">
+                    Try Again
+                </button>
+
+            </div>
+        }
+        else if (_selectedBudgetId == Guid.Empty)
+        {
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    ₹
+                </div>
+
+                <h3>Select a budget</h3>
+
+                <p>
+                    Select a monthly budget to view its expenses.
+                </p>
+
+            </div>
+        }
+        else if (!_expenses.Any())
+        {
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    ₹
+                </div>
+
+                <h3>No expenses found</h3>
+
+                <p>
+                    Start tracking your expenses by adding a transaction.
+                </p>
+
+                @if (_selectedCategoryId != Guid.Empty)
+                {
+                    <button class="primary-button"
+                            @onclick="OpenCreateForm">
+                        + Add Expense
+                    </button>
+                }
+
+            </div>
+        }
+        else
+        {
+            <div class="expense-table-container">
+
+                <table class="expense-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Remarks</th>
+                            <th>Amount</th>
+                            <th>Actions</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var expense in _expenses
+                            .OrderByDescending(x => x.ExpenseDate))
+                        {
+                            <tr>
+
+                                <td>
+                                    @expense.ExpenseDate.ToString("dd MMM yyyy")
+                                </td>
+
+                                <td>
+                                    <span class="category-badge">
+                                        @expense.BudgetCategoryName
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @(string.IsNullOrWhiteSpace(
+                                        expense.Remarks)
+                                        ? "-"
+                                        : expense.Remarks)
+                                </td>
+
+                                <td>
+                                    <span class="expense-amount">
+                                        @FormatCurrency(expense.Amount)
+                                    </span>
+                                </td>
+
+                                <td>
+
+                                    <div class="action-buttons">
+
+                                        <button class="action-button"
+                                                @onclick="() => OpenEditForm(expense)">
+                                            Edit
+                                        </button>
+
+                                        <button class="action-button delete"
+                                                @onclick="() => DeleteExpenseAsync(expense)">
+                                            Delete
+                                        </button>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+
+    </div>
+
+</div>
+
+
+<!-- Add/Edit Expense Modal -->
+@if (_showForm)
+{
+    <div class="modal-backdrop">
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <h2>
+                    @(_isEditMode
+                        ? "Edit Expense"
+                        : "Add Expense")
+                </h2>
+
+                <button class="close-button"
+                        @onclick="CloseForm">
+                    ×
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="form-group">
+
+                    <label>Category</label>
+
+                    <select @bind="_form.BudgetCategoryId">
+
+                        <option value="@Guid.Empty">
+                            Select Category
+                        </option>
+
+                        @foreach (var category in _categories)
+                        {
+                            <option value="@category.Id">
+                                @category.Name
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Amount</label>
+
+                    <input type="number"
+                           step="0.01"
+                           min="0"
+                           @bind="_form.Amount" />
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Date</label>
+
+                    <input type="date"
+                           @bind="_form.ExpenseDate" />
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Remarks</label>
+
+                    <textarea @bind="_form.Remarks"
+                              rows="3"
+                              placeholder="Optional remarks">
+                    </textarea>
+
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(_formError))
+                {
+                    <div class="form-error">
+                        @_formError
+                    </div>
+                }
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button class="secondary-button"
+                        @onclick="CloseForm">
+                    Cancel
+                </button>
+
+                <button class="primary-button"
+                        disabled="@_isSaving"
+                        @onclick="SaveExpenseAsync">
+
+                    @(_isSaving
+                        ? "Saving..."
+                        : "Save Expense")
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+
+@code {
+
+    private IEnumerable<BudgetModel> _budgets = Enumerable.Empty<BudgetModel>();
+    private IEnumerable<CategoryModel> _categories = Enumerable.Empty<CategoryModel>();
+    private IEnumerable<ExpenseModel> _expenses = Enumerable.Empty<ExpenseModel>();
+
+    private BudgetModel? _selectedBudget;
+
+    private Guid _selectedBudgetId;
+    private Guid _selectedCategoryId;
+    private Guid _editingExpenseId;
+
+    private CreateExpenseModel _form = new();
+
+    private bool _isLoading;
+    private bool _isSaving;
+    private bool _showForm;
+    private bool _isEditMode;
+
+    private string? _errorMessage;
+    private string? _formError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBudgetsAsync().ConfigureAwait(false);
+    }
+
+    private async Task LoadBudgetsAsync()
+    {
+        try
+        {
+            _budgets = await BudgetApiClient.GetAllAsync().ConfigureAwait(false);
+        }
+        catch
+        {
+            _errorMessage = "Unable to load budgets.";
+        }
+    }
+
+    private async Task BudgetChangedAsync(
+        ChangeEventArgs args)
+    {
+        if (Guid.TryParse(args.Value?.ToString(), out var budgetId))
+        {
+            _selectedBudgetId = budgetId;
+        }
+        else
+        {
+            _selectedBudgetId = Guid.Empty;
+        }
+
+        _selectedCategoryId = Guid.Empty;
+
+        if (_selectedBudgetId == Guid.Empty)
+        {
+            _selectedBudget = null;
+            _categories = Enumerable.Empty<CategoryModel>();
+
+            _expenses = Enumerable.Empty<ExpenseModel>();
+
+            return;
+        }
+
+        await LoadBudgetDataAsync().ConfigureAwait(false);
+    }
+
+    private async Task LoadBudgetDataAsync()
+    {
+        try
+        {
+            _isLoading = true;
+            _errorMessage = null;
+
+            _selectedBudget = await BudgetApiClient.GetByIdAsync(_selectedBudgetId).ConfigureAwait(false);
+
+            _categories = await CategoryApiClient.GetByBudgetIdAsync(_selectedBudgetId).ConfigureAwait(false);
+
+            await LoadExpensesAsync().ConfigureAwait(false);
+        }
+        catch
+        {
+            _errorMessage = "Unable to load budget information.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task CategoryChangedAsync(ChangeEventArgs args)
+    {
+        if (Guid.TryParse(
+            args.Value?.ToString(),
+            out var categoryId))
+        {
+            _selectedCategoryId = categoryId;
+        }
+        else
+        {
+            _selectedCategoryId = Guid.Empty;
+        }
+
+        await LoadExpensesAsync().ConfigureAwait(false);
+    }
+
+    private async Task LoadExpensesAsync()
+    {
+        if (_selectedBudgetId == Guid.Empty)
+        {
+            return;
+        }
+
+        try
+        {
+            _isLoading = true;
+
+            if (_selectedCategoryId == Guid.Empty)
+            {
+                _expenses = await ExpenseApiClient.GetByBudgetIdAsync(_selectedBudgetId).ConfigureAwait(false);
+            }
+            else
+            {
+                _expenses = await ExpenseApiClient.GetByCategoryIdAsync(_selectedCategoryId).ConfigureAwait(false);
+            }
+        }
+        catch
+        {
+            _errorMessage = "Unable to load expenses.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void OpenCreateForm()
+    {
+        _form = new CreateExpenseModel
+        {
+            BudgetCategoryId = _selectedCategoryId,
+            Amount = 0,
+            ExpenseDate = DateTime.Today,
+            Remarks = string.Empty
+        };
+
+        _editingExpenseId = Guid.Empty;
+        _isEditMode = false;
+        _formError = null;
+        _showForm = true;
+    }
+
+    private void OpenEditForm(ExpenseModel expense)
+    {
+        _form = new CreateExpenseModel
+        {
+            BudgetCategoryId = expense.BudgetCategoryId,
+            Amount = expense.Amount,
+            ExpenseDate = expense.ExpenseDate,
+            Remarks = expense.Remarks
+        };
+
+        _editingExpenseId = expense.Id;
+        _isEditMode = true;
+        _formError = null;
+        _showForm = true;
+    }
+
+    private async Task SaveExpenseAsync()
+    {
+        try
+        {
+            _formError = null;
+
+            if (_form.BudgetCategoryId == Guid.Empty)
+            {
+                _formError = "Please select a category.";
+                return;
+            }
+
+            if (_form.Amount <= 0)
+            {
+                _formError = "Amount must be greater than zero.";
+                return;
+            }
+
+            _isSaving = true;
+
+            if (_isEditMode)
+            {
+                var updateModel = new UpdateExpenseModel
+                {
+                    BudgetCategoryId = _form.BudgetCategoryId,
+                    Amount = _form.Amount,
+                    ExpenseDate = _form.ExpenseDate,
+                    Remarks = _form.Remarks
+                };
+
+                await ExpenseApiClient.UpdateAsync(_editingExpenseId, updateModel).ConfigureAwait(false);
+            }
+            else
+            {
+                await ExpenseApiClient.CreateAsync(_form).ConfigureAwait(false);
+            }
+
+            _showForm = false;
+
+            await LoadExpensesAsync().ConfigureAwait(false);
+        }
+        catch
+        {
+            _formError = "Unable to save the expense.";
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private async Task DeleteExpenseAsync(
+        ExpenseModel expense)
+    {
+        try
+        {
+            await ExpenseApiClient.DeleteAsync(expense.Id).ConfigureAwait(false);
+            await LoadExpensesAsync().ConfigureAwait(false);
+        }
+        catch
+        {
+            _errorMessage = "Unable to delete the expense.";
+        }
+    }
+
+    private void CloseForm()
+    {
+        _showForm = false;
+        _formError = null;
+    }
+
+    private static string GetBudgetDisplayName(BudgetModel budget)
+    {
+        var month = new DateTime(
+            2026,
+            budget.Month,
+            1).ToString("MMMM");
+
+        return $"{month} {budget.Year} - " + $"{FormatCurrency(budget.TotalBudget)}";
+    }
+
+    private static string FormatCurrency(decimal amount)
+    {
+        return $"₹{amount:N2}";
+    }
+}

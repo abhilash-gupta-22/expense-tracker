@@ -45,11 +45,27 @@ public class ExpenseApiClient : IExpenseApiClient
         return await response.Content.ReadFromJsonAsync<ExpenseModel>().ConfigureAwait(false);
     }
 
+
+    /// <summary>
+    /// Gets all expenses associated with a specific budget.
+    /// </summary>
+    /// <param name="budgetId"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<ExpenseModel>> GetByBudgetIdAsync(Guid budgetId)
+    {
+        var response = await _httpClient.GetAsync($"api/expenses/budget/{budgetId}");
+
+        if (!response.IsSuccessStatusCode) 
+            return Enumerable.Empty<ExpenseModel>();
+
+        return await response.Content.ReadFromJsonAsync<IEnumerable<ExpenseModel>>().ConfigureAwait(false)
+               ?? Enumerable.Empty<ExpenseModel>();
+    }
+
     /// <summary>
     /// Gets all expenses for a specific budget category.
     /// </summary>
-    public async Task<IEnumerable<ExpenseModel>>
-        GetByCategoryIdAsync(Guid budgetCategoryId)
+    public async Task<IEnumerable<ExpenseModel>> GetByCategoryIdAsync(Guid budgetCategoryId)
     {
         var expenses = await _httpClient.GetFromJsonAsync<IEnumerable<ExpenseModel>>($"{BaseUrl}/category/{budgetCategoryId}").ConfigureAwait(false);
 
