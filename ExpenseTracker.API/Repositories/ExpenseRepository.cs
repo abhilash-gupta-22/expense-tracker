@@ -66,6 +66,16 @@ public class ExpenseRepository : IExpenseRepository
         return await _context.Expenses.AnyAsync(x => x.Id == id).ConfigureAwait(false);
     }
 
+
+    public async Task<IEnumerable<Expense>> GetByBudgetIdAsync(Guid budgetId)
+    {
+        Guard.AgainstNull(budgetId, nameof(budgetId));
+
+        return await _context.Expenses.Where(e => _context.BudgetCategories
+                .Any(c => c.Id == e.BudgetCategoryId && c.BudgetId == budgetId))
+                .ToListAsync().ConfigureAwait(false);
+    }
+
     public async Task<IEnumerable<Expense>> GetExpensesByCategoryAsync(Guid categoryId)
     {
         Guard.AgainstNull(categoryId, nameof(categoryId));

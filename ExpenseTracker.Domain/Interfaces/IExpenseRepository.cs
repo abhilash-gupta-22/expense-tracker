@@ -5,6 +5,13 @@ namespace ExpenseTracker.Domain.Interfaces;
 public interface IExpenseRepository : IBaseRepository<Expense>
 {
     /// <summary>
+    /// Gets all expenses for a specific budget.
+    /// </summary>
+    /// <param name="budgetId"></param>
+    /// <returns></returns>
+    Task<IEnumerable<Expense>> GetByBudgetIdAsync(Guid budgetId);
+
+    /// <summary>
     /// Gets all expenses for a specific category.
     /// </summary>
     /// <param name="categoryId"></param>

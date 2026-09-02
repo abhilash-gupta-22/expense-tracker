@@ -57,6 +57,18 @@ public class ExpenseController : ControllerBase
         return Ok(expense.ToResponse());
     }
 
+    [HttpGet("budget/{budgetId:guid}")]
+    [ProducesResponseType(typeof(IEnumerable<ExpenseResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<ExpenseResponse>>> GetByBudgetIdAsync(Guid budgetId)
+    {
+        Guard.AgainstNullOrEmptyGuid(budgetId, nameof(budgetId));
+
+        var expenses = await _expenseRepository.GetByBudgetIdAsync(budgetId).ConfigureAwait(false);
+        var response = expenses.Select(e => e.ToResponse());
+
+        return Ok(response);
+    }
+
     [HttpGet("category/{categoryId:guid}")]
     [ProducesResponseType(typeof(IEnumerable<ExpenseResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<ExpenseResponse>>> GetByCategoryAsync(Guid categoryId)
