@@ -306,11 +306,9 @@
 @code {
 
     private IEnumerable<BudgetModel> _budgets = Enumerable.Empty<BudgetModel>();
-
     private IEnumerable<CategoryModel> _categories = Enumerable.Empty<CategoryModel>();
 
     private BudgetModel? _selectedBudget;
-
     private Guid _selectedBudgetId;
 
     private CreateCategoryModel _form = new();
@@ -327,7 +325,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadBudgetsAsync();
+        await LoadBudgetsAsync().ConfigureAwait(false);
 
         var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
 
@@ -336,8 +334,7 @@
         if (query.TryGetValue("budgetId", out var budgetIdValue) && Guid.TryParse(budgetIdValue.FirstOrDefault(), out var budgetId))
         {
             _selectedBudgetId = budgetId;
-
-            await SelectBudgetAsync();
+            await SelectBudgetAsync().ConfigureAwait(false);
         }
     }
 
@@ -345,7 +342,7 @@
     {
         try
         {
-            _budgets = await BudgetApiClient.GetAllAsync();
+            _budgets = await BudgetApiClient.GetAllAsync().ConfigureAwait(false);
         }
         catch (Exception)
         {
@@ -365,7 +362,7 @@
             _selectedBudgetId = Guid.Empty;
         }
 
-        await SelectBudgetAsync();
+        await SelectBudgetAsync().ConfigureAwait(false);
     }
 
     private async Task SelectBudgetAsync()
@@ -375,7 +372,6 @@
         if (_selectedBudgetId == Guid.Empty)
         {
             _categories = Enumerable.Empty<CategoryModel>();
-
             _selectedBudget = null;
 
             return;
@@ -385,9 +381,9 @@
         {
             _isLoading = true;
 
-            _selectedBudget = await BudgetApiClient.GetByIdAsync(_selectedBudgetId);
+            _selectedBudget = await BudgetApiClient.GetByIdAsync(_selectedBudgetId).ConfigureAwait(false);
 
-            await LoadCategoriesAsync();
+            await LoadCategoriesAsync().ConfigureAwait(false);
         }
         catch (Exception)
         {
@@ -410,7 +406,7 @@
         {
             _isLoading = true;
 
-            _categories = await CategoryApiClient.GetByBudgetIdAsync(_selectedBudgetId);
+            _categories = await CategoryApiClient.GetByBudgetIdAsync(_selectedBudgetId).ConfigureAwait(false);
         }
         catch (Exception)
         {
@@ -484,21 +480,20 @@
                     AllocatedBudget = _form.AllocatedBudget
                 };
 
-                await CategoryApiClient.UpdateAsync(_editingCategoryId, updateModel);
+                await CategoryApiClient.UpdateAsync(_editingCategoryId, updateModel).ConfigureAwait(false);
             }
             else
             {
-                await CategoryApiClient.CreateAsync(_form);
+                await CategoryApiClient.CreateAsync(_form).ConfigureAwait(false);
             }
 
             _showForm = false;
 
-            await LoadCategoriesAsync();
+            await LoadCategoriesAsync().ConfigureAwait(false);
 
             // Refresh selected budget because category collection
             // may have changed.
-            _selectedBudget =
-                await BudgetApiClient.GetByIdAsync(_selectedBudgetId);
+            _selectedBudget = await BudgetApiClient.GetByIdAsync(_selectedBudgetId).ConfigureAwait(false);
         }
         catch (Exception)
         {
@@ -514,9 +509,8 @@
     {
         try
         {
-            await CategoryApiClient.DeleteAsync(category.Id);
-
-            await LoadCategoriesAsync();
+            await CategoryApiClient.DeleteAsync(category.Id).ConfigureAwait(false);
+            await LoadCategoriesAsync().ConfigureAwait(false);
         }
         catch (Exception)
         {

@@ -306,31 +306,25 @@
 
     private DashboardSummaryModel _summary = new();
 
-    private IEnumerable<CategorySummaryModel> _categorySummaries =
-        Enumerable.Empty<CategorySummaryModel>();
-
-    private IEnumerable<RecentExpenseModel> _recentExpenses =
-        Enumerable.Empty<RecentExpenseModel>();
-
-    private IEnumerable<ExpenseTrendModel> _expenseTrend =
-        Enumerable.Empty<ExpenseTrendModel>();
+    private IEnumerable<CategorySummaryModel> _categorySummaries = Enumerable.Empty<CategorySummaryModel>();
+    private IEnumerable<RecentExpenseModel> _recentExpenses = Enumerable.Empty<RecentExpenseModel>();
+    private IEnumerable<ExpenseTrendModel> _expenseTrend = Enumerable.Empty<ExpenseTrendModel>();
 
     private bool _isLoading = true;
-
     private string? _errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
         BudgetState.OnChange += OnBudgetStateChanged;
 
-        await LoadDashboardAsync();
+        await LoadDashboardAsync().ConfigureAwait(false);
     }
 
     private async void OnBudgetStateChanged()
     {
         await InvokeAsync(async () =>
         {
-            await LoadDashboardAsync();
+            await LoadDashboardAsync().ConfigureAwait(false);
             StateHasChanged();
         });
     }
@@ -345,22 +339,14 @@
             var month = BudgetState.SelectedMonth;
             var year = BudgetState.SelectedYear;
 
-            _summary = await DashboardApiClient
-                .GetSummaryAsync(month, year);
-
-            _categorySummaries = await DashboardApiClient
-                .GetCategorySummaryAsync(month, year);
-
-            _recentExpenses = await DashboardApiClient
-                .GetRecentExpensesAsync(month, year, 5);
-
-            _expenseTrend = await DashboardApiClient
-                .GetExpenseTrendAsync(month, year);
+            _summary = await DashboardApiClient.GetSummaryAsync(month, year).ConfigureAwait(false);
+            _categorySummaries = await DashboardApiClient.GetCategorySummaryAsync(month, year).ConfigureAwait(false);
+            _recentExpenses = await DashboardApiClient.GetRecentExpensesAsync(month, year, 5).ConfigureAwait(false);
+            _expenseTrend = await DashboardApiClient.GetExpenseTrendAsync(month, year).ConfigureAwait(false);
         }
         catch (Exception)
         {
-            _errorMessage =
-                "Unable to load the dashboard. Please try again.";
+            _errorMessage = "Unable to load the dashboard. Please try again.";
         }
         finally
         {

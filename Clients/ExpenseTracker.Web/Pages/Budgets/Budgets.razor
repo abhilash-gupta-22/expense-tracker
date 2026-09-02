@@ -277,7 +277,6 @@
 @code {
 
     private IEnumerable<BudgetModel> _budgets = Enumerable.Empty<BudgetModel>();
-
     private CreateBudgetModel _form = new();
 
     private bool _isLoading;
@@ -292,7 +291,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadBudgetsAsync();
+        await LoadBudgetsAsync().ConfigureAwait(false);
     }
 
     private async Task LoadBudgetsAsync()
@@ -302,12 +301,11 @@
             _isLoading = true;
             _errorMessage = null;
 
-            _budgets = await BudgetApiClient.GetAllAsync();
+            _budgets = await BudgetApiClient.GetAllAsync().ConfigureAwait(false);
         }
         catch (Exception)
         {
-            _errorMessage =
-                "Unable to load budgets. Please try again.";
+            _errorMessage = "Unable to load budgets. Please try again.";
         }
         finally
         {
@@ -368,16 +366,16 @@
                     TotalBudget = _form.TotalBudget
                 };
 
-                await BudgetApiClient.UpdateAsync(_editingBudgetId, updateModel);
+                await BudgetApiClient.UpdateAsync(_editingBudgetId, updateModel).ConfigureAwait(false);
             }
             else
             {
-                await BudgetApiClient.CreateAsync(_form);
+                await BudgetApiClient.CreateAsync(_form).ConfigureAwait(false);
             }
 
             _showForm = false;
 
-            await LoadBudgetsAsync();
+            await LoadBudgetsAsync().ConfigureAwait(false);
         }
         catch (Exception)
         {
@@ -393,9 +391,9 @@
     {
         try
         {
-            await BudgetApiClient.DeleteAsync(budget.Id);
+            await BudgetApiClient.DeleteAsync(budget.Id).ConfigureAwait(false);
 
-            await LoadBudgetsAsync();
+            await LoadBudgetsAsync().ConfigureAwait(false);
         }
         catch (Exception)
         {
