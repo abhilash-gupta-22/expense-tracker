@@ -1,0 +1,94 @@
+﻿<div class="category-card">
+
+    <div class="component-header">
+
+        <div>
+            <h2>Category Overview</h2>
+
+            <p>
+                Track spending against category budgets.
+            </p>
+        </div>
+
+    </div>
+
+    @if (Categories is null || !Categories.Any())
+    {
+        <div class="empty-state">
+            No categories available.
+        </div>
+    }
+    else
+    {
+        <div class="category-list">
+
+            @foreach (var category in Categories)
+            {
+                var spent = category.SpentAmount;
+
+                var percentage = category.AllocatedBudget <= 0
+                    ? 0
+                    : Math.Min((spent / category.AllocatedBudget) * 100, 100);
+
+                <div class="category-item">
+
+                    <div class="category-header">
+
+                        <div class="category-name">
+                            @category.Name
+                        </div>
+
+                        <div class="category-amount">
+                            @FormatCurrency(spent)
+                            /
+                            @FormatCurrency(
+                                category.AllocatedBudget)
+                        </div>
+
+                    </div>
+
+                    <div class="progress-container">
+
+                        <div class="progress-bar">
+
+                            <div class="progress-value"
+                                 style="width:@percentage%">
+                            </div>
+
+                        </div>
+
+                        <span class="percentage">
+                            @percentage.ToString("0.0")%
+                        </span>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+    }
+
+</div>
+
+@code {
+
+    [Parameter]
+    public IEnumerable<CategoryBudgetItem>? Categories { get; set; }
+
+    private static string FormatCurrency(decimal amount)
+    {
+        return $"₹{amount:N2}";
+    }
+
+    public class CategoryBudgetItem
+    {
+        public Guid Id { get; set; }
+
+        public string Name { get; set; } = string.Empty;
+
+        public decimal AllocatedBudget { get; set; }
+
+        public decimal SpentAmount { get; set; }
+    }
+}
