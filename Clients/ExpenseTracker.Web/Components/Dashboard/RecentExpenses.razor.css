@@ -1,0 +1,90 @@
+﻿.expenses-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.component-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+    .component-header h2 {
+        margin: 0;
+        font-size: 1.1rem;
+    }
+
+    .component-header p {
+        margin: 0.35rem 0 0;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+    }
+
+.view-all {
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.expense-list {
+    padding: 0 1.5rem;
+}
+
+.expense-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+    .expense-item:last-child {
+        border-bottom: none;
+    }
+
+.expense-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.expense-category {
+    font-weight: 600;
+}
+
+.expense-date {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.expense-remarks {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+
+.expense-amount {
+    font-weight: 700;
+}
+
+.empty-state {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+@media (max-width: 600px) {
+
+    .expense-item {
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .expense-amount {
+        white-space: nowrap;
+    }
+}

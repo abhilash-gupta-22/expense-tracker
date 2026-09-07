@@ -1,0 +1,82 @@
+﻿@using ExpenseTracker.Web.Models.Expense
+<div class="expenses-card">
+
+    <div class="component-header">
+
+        <div>
+            <h2>Recent Expenses</h2>
+
+            <p>
+                Your latest transactions.
+            </p>
+        </div>
+
+        <a href="/expenses"
+           class="view-all">
+            View All
+        </a>
+
+    </div>
+
+    @if (Expenses is null || !Expenses.Any())
+    {
+        <div class="empty-state">
+            No expenses recorded yet.
+        </div>
+    }
+    else
+    {
+        <div class="expense-list">
+
+            @foreach (var expense in Expenses
+                .OrderByDescending(x => x.ExpenseDate)
+                .Take(MaxItems))
+            {
+                <div class="expense-item">
+
+                    <div class="expense-info">
+
+                        <span class="expense-category">
+                            @expense.BudgetCategoryName
+                        </span>
+
+                        <span class="expense-date">
+                            @expense.ExpenseDate.ToString(
+                                "dd MMM yyyy")
+                        </span>
+
+                        @if (!string.IsNullOrWhiteSpace(
+                            expense.Remarks))
+                        {
+                            <span class="expense-remarks">
+                                @expense.Remarks
+                            </span>
+                        }
+
+                    </div>
+
+                    <span class="expense-amount">
+                        @FormatCurrency(expense.Amount)
+                    </span>
+
+                </div>
+            }
+
+        </div>
+    }
+
+</div>
+
+@code {
+
+    [Parameter]
+    public IEnumerable<ExpenseModel>? Expenses { get; set; }
+
+    [Parameter]
+    public int MaxItems { get; set; } = 5;
+
+    private static string FormatCurrency(decimal amount)
+    {
+        return $"₹{amount:N2}";
+    }
+}
