@@ -1,0 +1,71 @@
+﻿<div class="summary-grid">
+
+    <div class="summary-card">
+        <div class="summary-card-content">
+            <span class="summary-title">
+                Total Budget
+            </span>
+
+            <span class="summary-value">
+                @FormatCurrency(TotalBudget)
+            </span>
+        </div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-card-content">
+            <span class="summary-title">
+                Total Expenses
+            </span>
+
+            <span class="summary-value">
+                @FormatCurrency(TotalExpenses)
+            </span>
+        </div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-card-content">
+            <span class="summary-title">
+                Remaining
+            </span>
+
+            <span class="summary-value">
+                @FormatCurrency(RemainingBudget)
+            </span>
+        </div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-card-content">
+            <span class="summary-title">
+                Budget Used
+            </span>
+
+            <span class="summary-value">
+                @UsagePercentage.ToString("0.0")%
+            </span>
+        </div>
+    </div>
+
+</div>
+
+@code {
+
+    [Parameter]
+    public decimal TotalBudget { get; set; }
+
+    [Parameter]
+    public decimal TotalExpenses { get; set; }
+
+    private decimal RemainingBudget => TotalBudget - TotalExpenses;
+
+    private decimal UsagePercentage => TotalBudget <= 0
+            ? 0
+            : (TotalExpenses / TotalBudget) * 100;
+
+    private static string FormatCurrency(decimal amount)
+    {
+        return $"₹{amount:N2}";
+    }
+}
