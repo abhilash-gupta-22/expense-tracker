@@ -1,13 +1,18 @@
 ﻿:root {
-    /* Colors */
-    --primary: #6d4aff;
-    --primary-light: #f0edff;
+    --primary: #6c4df6;
+    --primary-light: #eee9ff;
     --background: #f7f8fc;
     --surface: #ffffff;
-    --text-primary: #1f2937;
+    --surface-secondary: #f9fafc;
+    --text-primary: #171923;
     --text-secondary: #6b7280;
-    --border: #e5e7eb;
+    --border: #e6e8ef;
+    --success: #22c55e;
     --danger: #ef4444;
-    /* Layout */
-    --border-radius: 12px;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+    --sidebar-width: 230px;
+    --border-radius: 10px;
+    --card-radius: 10px;
+    --shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
 }

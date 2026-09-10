@@ -1,110 +1,92 @@
 ﻿@inherits LayoutComponentBase
 
 <div class="app-layout">
-
-    <!-- Sidebar -->
     <aside class="sidebar">
-
-        <div class="sidebar-header">
-            <a href="/" class="brand">
-                <span class="brand-icon">₹</span>
-
-                <span class="brand-text">
-                    Expense Tracker
-                </span>
-            </a>
-        </div>
-
-        <nav class="navigation">
-
-            <div class="navigation-label">
-                MENU
+        <div class="sidebar-brand">
+            <div class="brand-icon">
+                ₹
             </div>
 
-            <NavLink href="/"
-                     Match="NavLinkMatch.All"
-                     class="nav-item">
+            <span>
+                Expense Tracker
+            </span>
+
+        </div>
+
+        <nav class="sidebar-navigation">
+
+            <NavLink href="/" Match="NavLinkMatch.All" class="nav-item">
                 <span class="nav-icon">⌂</span>
                 <span>Dashboard</span>
             </NavLink>
 
-            <NavLink href="/budgets"
-                     class="nav-item">
+            <NavLink href="/budgets" class="nav-item">
                 <span class="nav-icon">▣</span>
                 <span>Budgets</span>
             </NavLink>
 
-            <NavLink href="/categories"
-                     class="nav-item">
-                <span class="nav-icon">☰</span>
+            <NavLink href="/categories" class="nav-item">
+                <span class="nav-icon">⊞</span>
                 <span>Categories</span>
             </NavLink>
 
-            <NavLink href="/expenses"
-                     class="nav-item">
-                <span class="nav-icon">↗</span>
+            <NavLink href="/expenses" class="nav-item">
+                <span class="nav-icon">▤</span>
                 <span>Expenses</span>
             </NavLink>
 
-            <NavLink href="/reports"
-                     class="nav-item">
-                <span class="nav-icon">◫</span>
+            <NavLink href="/reports" class="nav-item">
+                <span class="nav-icon">◩</span>
                 <span>Reports</span>
             </NavLink>
 
+            <NavLink href="/settings" class="nav-item">
+                <span class="nav-icon">⚙</span>
+                <span>Settings</span>
+            </NavLink>
         </nav>
 
-        <div class="sidebar-footer">
-            <div class="footer-text">
-                Expense Tracker
-            </div>
+        <div class="sidebar-month">
+            <span class="month-label">
+                Current Month
+            </span>
 
-            <div class="footer-version">
-                Version 1.0
+            <div class="month-value">
+                May 2025
             </div>
         </div>
-
     </aside>
 
-    <!-- Main Content -->
-    <div class="main-container">
 
-        <!-- Header -->
-        <header class="top-header">
+    <main class="main-content">
+        <header class="topbar">
+            <div class="welcome">
+                <h1>
+                    Welcome back, Abhilash 👋
+                </h1>
 
-            <div class="header-title">
-                <span>Personal Finance Manager</span>
+                <p>
+                    Here's what's happening with your budget this month.
+                </p>
             </div>
 
-            <div class="header-actions">
-
-                <button type="button"
-                        class="header-button"
-                        title="Notifications">
+            <div class="topbar-actions">
+                <button class="notification-button">
                     🔔
                 </button>
 
-                <div class="user-profile">
-
-                    <div class="user-avatar">
-                        A
-                    </div>
-
-                    <div class="user-info">
-                        <span class="user-name">User</span>
-                    </div>
-
+                <div class="user-avatar">
+                    A
                 </div>
-
             </div>
 
         </header>
 
-        <!-- Page Content -->
-        <main class="page-content">
-            @Body
-        </main>
 
-    </div>
+        <section class="content">
+            @Body
+        </section>
+
+    </main>
 
 </div>
