@@ -1,8 +1,7 @@
 ﻿@page "/"
 
 @using ExpenseTracker.Web.Components.Dashboard
-@using ExpenseTracker.Web.Models.Budget
-@using ExpenseTracker.Web.Models.Category
+@using ExpenseTracker.Web.Models.Dashboard
 @using ExpenseTracker.Web.Models.Expense
 @using ExpenseTracker.Web.Services.Interfaces
 
@@ -14,13 +13,14 @@
 
 <div class="dashboard-page">
 
-    <div class="page-header">
-        <div>
-            <h1>Dashboard</h1>
-            <p>
-                Overview of your monthly budget and expenses.
-            </p>
-        </div>
+    <div class="page-title">
+
+        <h2>Dashboard</h2>
+
+        <p>
+            Overview of your monthly budget and expenses.
+        </p>
+
     </div>
 
     <BudgetSummary TotalBudget="@TotalBudget"
@@ -28,10 +28,18 @@
 
     <div class="dashboard-grid">
 
-        <CategoryBudgetOverview Categories="@CategoryBudgets" />
+        <BudgetOverview />
+
+        <ExpensesTrend />
+
+    </div>
+
+    <div class="dashboard-grid">
 
         <RecentExpenses Expenses="@RecentExpenses"
                         MaxItems="5" />
+
+        <TopCategories Categories="@CategoryBudgets " />
 
     </div>
 
@@ -45,10 +53,5 @@
 
     private IEnumerable<ExpenseModel> RecentExpenses { get; set; } = Enumerable.Empty<ExpenseModel>();
 
-    private List<CategoryBudgetOverview.CategoryBudgetItem> CategoryBudgets { get; set; } = new();
-
-    protected override async Task OnInitializedAsync()
-    {
-        // Load dashboard data here.
-    }
+    private List<CategoryBudgetItem> CategoryBudgets { get; set; } = new();
 }

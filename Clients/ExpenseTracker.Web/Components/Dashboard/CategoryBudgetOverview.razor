@@ -1,4 +1,5 @@
-﻿<div class="category-card">
+﻿@using ExpenseTracker.Web.Models.Dashboard
+<div class="category-card">
 
     <div class="component-header">
 
@@ -79,16 +80,5 @@
     private static string FormatCurrency(decimal amount)
     {
         return $"₹{amount:N2}";
-    }
-
-    public class CategoryBudgetItem
-    {
-        public Guid Id { get; set; }
-
-        public string Name { get; set; } = string.Empty;
-
-        public decimal AllocatedBudget { get; set; }
-
-        public decimal SpentAmount { get; set; }
     }
 }
