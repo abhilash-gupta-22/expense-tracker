@@ -13,27 +13,29 @@ public class BudgetController : ControllerBase
 {
     private readonly IBudgetRepository _budgetRepository;
     private readonly IBudgetDomainService _budgetService;
+    private readonly ILogger<BudgetController> _logger;
 
-    public BudgetController(IBudgetRepository budgetRepository, IBudgetDomainService budgetService)
+    public BudgetController(IBudgetRepository budgetRepository, IBudgetDomainService budgetService, ILogger<BudgetController> logger)
     {
         Guard.AgainstNull(budgetRepository, nameof(budgetRepository));
         Guard.AgainstNull(budgetService, nameof(budgetService));
+        Guard.AgainstNull(logger, nameof(logger));
 
         _budgetRepository = budgetRepository;
         _budgetService = budgetService;
+        _logger = logger;
     }
 
-    /// <summary>
-    /// Returns all budgets.
-    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<BudgetResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<BudgetResponse>>> GetAllAsync()
     {
-        var budgets = await _budgetRepository.GetAllAsync().ConfigureAwait(false);
+        _logger.LogInformation("Retrieving all budgets.");
 
-        // TODO: Map Entity -> DTO
+        var budgets = await _budgetRepository.GetAllAsync().ConfigureAwait(false);
         var response = budgets.Select(b => b.ToResponse());
+
+        _logger.LogInformation("Retrieved {BudgetCount} budgets.", response.Count());
 
         return Ok(response);
     }
@@ -46,12 +48,15 @@ public class BudgetController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<BudgetResponse>> GetByIdAsync(Guid id)
     {
+        _logger.LogInformation($"Retrieving budget with Id {id}.");
+
         Guard.AgainstNullOrEmptyGuid(id, nameof(id));
 
         var budget = await _budgetRepository.GetByIdAsync(id).ConfigureAwait(false);
 
         if (budget is null)
         {
+            _logger.LogWarning($"Budget with Id {id} was not found.");
             return NotFound();
         }
 
@@ -66,6 +71,8 @@ public class BudgetController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<BudgetResponse>> GetByMonthAsync(int year, int month)
     {
+        _logger.LogInformation($"Retrieving budget for {month}/{year}.");
+
         Guard.AgainstInvalidYear(year, nameof(year));
         Guard.AgainstInvalidMonth(month, nameof(month));
 
@@ -73,6 +80,8 @@ public class BudgetController : ControllerBase
 
         if (budget is null)
         {
+            _logger.LogWarning($"No budget found for {month}/{year}.");
+
             return NotFound();
         }
 
@@ -90,31 +99,41 @@ public class BudgetController : ControllerBase
     {
         if (request is null)
         {
+            _logger.LogWarning("Create budget request body was null.");
             return BadRequest("Request body is required.");
         }
 
+        Guard.AgainstNull(request, nameof(request));
+
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("Invalid request received while creating budget.");
             return ValidationProblem(ModelState);
         }
+
+        _logger.LogInformation($"Creating budget for {request.Month}/{request.Year} with total amount {request.TotalBudget}.");
 
         var budgetExists = await _budgetRepository.BudgetExistsAsync(request.Month, request.Year).ConfigureAwait(false);
 
         if (budgetExists)
         {
-            return Conflict($"Budget already exists for " + $"{request.Month}/{request.Year}.");
+            _logger.LogWarning($"Budget already exists for {request.Month}/{request.Year}.");
+            return Conflict($"Budget already exists for {request.Month}/{request.Year}.");
         }
 
         var result = _budgetService.CreateBudget(request.TotalBudget, request.Month, request.Year);
 
         if (result.IsFailure)
         {
+            _logger.LogWarning($"Budget creation failed for {request.Month}/{request.Year}: {result.ErrorMessage}.");
             return BadRequest(result.ErrorMessage);
         }
 
         var budget = result.Value;
 
         await _budgetRepository.AddAsync(budget).ConfigureAwait(false);
+
+        _logger.LogInformation($"Budget created successfully with Id {budget.Id}.");
 
         var response = new BudgetResponse
         {
@@ -138,11 +157,14 @@ public class BudgetController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] UpdateBudgetRequest request)
     {
+        _logger.LogInformation("Updating budget with Id {BudgetId}.", id);
+
         Guard.AgainstNullOrEmptyGuid(id, nameof(id));
         Guard.AgainstNull(request, nameof(request));
 
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning($"Invalid request received for budget {id}.");
             return ValidationProblem(ModelState);
         }
 
@@ -150,6 +172,7 @@ public class BudgetController : ControllerBase
 
         if (budget is null)
         {
+            _logger.LogWarning($"Budget with Id {id} was not found for update.");
             return NotFound();
         }
 
@@ -160,6 +183,8 @@ public class BudgetController : ControllerBase
         budget.TotalBudget = request.TotalBudget;
 
         await _budgetRepository.UpdateAsync(budget).ConfigureAwait(false);
+
+        _logger.LogInformation($"Budget with Id {id} updated successfully.");
 
         return NoContent();
     }
@@ -172,16 +197,21 @@ public class BudgetController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteAsync(Guid id)
     {
+        _logger.LogInformation($"Deleting budget with Id {id}.");
+
         Guard.AgainstNullOrEmptyGuid(id, nameof(id));
 
         var exists = await _budgetRepository.ExistsAsync(id).ConfigureAwait(false);
 
         if (!exists)
         {
+            _logger.LogWarning($"Budget with Id {id} was not found for deletion.");
             return NotFound();
         }
 
         await _budgetRepository.DeleteAsync(id).ConfigureAwait(false);
+
+        _logger.LogInformation($"Budget with Id {id} deleted successfully.");
 
         return NoContent();
     }
