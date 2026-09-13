@@ -1,12 +1,14 @@
 using ExpenseTracker.API.Data;
+using ExpenseTracker.API.Logging;
 using ExpenseTracker.API.Repositories;
 using ExpenseTracker.Domain.Interfaces;
-using Microsoft.EntityFrameworkCore;
 using ExpenseTracker.Domain.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Logging.AddExpenseTrackerLogging();
 
 // Add services to the container.
 
