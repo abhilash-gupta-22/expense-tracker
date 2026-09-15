@@ -16,16 +16,19 @@ public class CategoryController : ControllerBase
     private readonly ICategoryRepository _categoryRepository;
     private readonly IBudgetRepository _budgetRepository;
     private readonly IBudgetDomainService _budgetService;
+    private readonly Microsoft.Extensions.Logging.ILogger<CategoryController> _logger;
 
-    public CategoryController(ICategoryRepository categoryRepository, IBudgetRepository budgetRepository, IBudgetDomainService budgetService)
+    public CategoryController(ICategoryRepository categoryRepository, IBudgetRepository budgetRepository, IBudgetDomainService budgetService, Microsoft.Extensions.Logging.ILogger<CategoryController> logger)
     {
         Guard.AgainstNull(categoryRepository, nameof(categoryRepository));
         Guard.AgainstNull(budgetRepository, nameof(budgetRepository));
         Guard.AgainstNull(budgetService, nameof(budgetService));
+        Guard.AgainstNull(logger, nameof(logger));
 
         _categoryRepository = categoryRepository;
         _budgetRepository = budgetRepository;
         _budgetService = budgetService;
+        _logger = logger;
     }
 
     [HttpGet("budget/{budgetId:guid}")]
@@ -34,6 +37,7 @@ public class CategoryController : ControllerBase
     {
         Guard.AgainstNullOrEmptyGuid(budgetId, nameof(budgetId));
 
+        _logger.LogInformation($"Fetching categories for budget {budgetId}");
         var categories = await _categoryRepository.GetCategoriesByBudgetAsync(budgetId).ConfigureAwait(false);
 
         return Ok(categories.ToResponse());
@@ -50,9 +54,11 @@ public class CategoryController : ControllerBase
 
         if (category is null)
         {
+            _logger.LogWarning($"Category not found: {id}");
             return NotFound();
         }
 
+        _logger.LogInformation($"Returning category {id}");
         return Ok(category.ToResponse());
     }
 
@@ -63,6 +69,7 @@ public class CategoryController : ControllerBase
     {
         Guard.AgainstNull(request, nameof(request));
 
+        _logger.LogInformation($"Creating category {request.Name} for budget {request.BudgetId}");
         if (!ModelState.IsValid)
         {
             return ValidationProblem(ModelState);
@@ -120,6 +127,7 @@ public class CategoryController : ControllerBase
 
         if (category is null)
         {
+            _logger.LogWarning($"Category to update not found: {id}");
             return NotFound();
         }
 
@@ -128,6 +136,7 @@ public class CategoryController : ControllerBase
 
         await _categoryRepository.UpdateAsync(category).ConfigureAwait(false);
 
+        _logger.LogInformation($"Updated category {id}");
         return NoContent();
     }
 
@@ -142,10 +151,13 @@ public class CategoryController : ControllerBase
 
         if (!exists)
         {
+            _logger.LogWarning($"Category to delete not found: {id}");
             return NotFound();
         }
 
         await _categoryRepository.DeleteAsync(id).ConfigureAwait(false);
+
+        _logger.LogInformation($"Deleted category {id}");
 
         return NoContent();
     }

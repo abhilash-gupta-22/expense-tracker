@@ -17,24 +17,28 @@ public class ExpenseController : ControllerBase
     private readonly ICategoryRepository _categoryRepository;
     private readonly IBudgetRepository _budgetRepository;
     private readonly IExpenseDomainService _expenseService;
+    private readonly Microsoft.Extensions.Logging.ILogger<ExpenseController> _logger;
 
-    public ExpenseController(IExpenseRepository expenseRepository, ICategoryRepository categoryRepository, IBudgetRepository budgetRepository, IExpenseDomainService expenseService)
+    public ExpenseController(IExpenseRepository expenseRepository, ICategoryRepository categoryRepository, IBudgetRepository budgetRepository, IExpenseDomainService expenseService, Microsoft.Extensions.Logging.ILogger<ExpenseController> logger)
     {
         Guard.AgainstNull(expenseRepository, nameof(expenseRepository));
         Guard.AgainstNull(categoryRepository, nameof(categoryRepository));
         Guard.AgainstNull(budgetRepository, nameof(budgetRepository));
         Guard.AgainstNull(expenseService, nameof(expenseService));
+        Guard.AgainstNull(logger, nameof(logger));
 
         _expenseRepository = expenseRepository;
         _categoryRepository = categoryRepository;
         _budgetRepository = budgetRepository;
         _expenseService = expenseService;
+        _logger = logger;
     }
 
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<ExpenseResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<ExpenseResponse>>> GetAllAsync()
     {
+        _logger.LogInformation("Fetching all expenses");
         var expenses = await _expenseRepository.GetAllAsync().ConfigureAwait(false);
 
         return Ok(expenses.ToResponse());
@@ -51,9 +55,11 @@ public class ExpenseController : ControllerBase
 
         if (expense is null)
         {
+            _logger.LogWarning($"Expense not found: {id}");
             return NotFound();
         }
 
+        _logger.LogInformation($"Returning expense {id}");
         return Ok(expense.ToResponse());
     }
 
@@ -99,6 +105,7 @@ public class ExpenseController : ControllerBase
     {
         Guard.AgainstNull(request, nameof(request));
 
+        _logger.LogInformation($"Creating expense in category {request.CategoryId} amount {request.Amount}");
         if (!ModelState.IsValid)
         {
             return ValidationProblem(ModelState);
@@ -162,6 +169,7 @@ public class ExpenseController : ControllerBase
 
         if (expense is null)
         {
+            _logger.LogWarning($"Expense to update not found: {id}");
             return NotFound();
         }
 
@@ -171,6 +179,7 @@ public class ExpenseController : ControllerBase
 
         await _expenseRepository.UpdateAsync(expense).ConfigureAwait(false);
 
+        _logger.LogInformation($"Updated expense {id}");
         return NoContent();
     }
 
@@ -185,10 +194,13 @@ public class ExpenseController : ControllerBase
 
         if (!exists)
         {
+            _logger.LogWarning($"Expense to delete not found: {id}");
             return NotFound();
         }
 
         await _expenseRepository.DeleteAsync(id).ConfigureAwait(false);
+
+        _logger.LogInformation($"Deleted expense {id}");
 
         return NoContent();
     }
