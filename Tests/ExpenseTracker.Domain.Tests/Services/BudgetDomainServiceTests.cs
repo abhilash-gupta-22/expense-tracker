@@ -458,4 +458,83 @@ public class BudgetDomainServiceTests
         Assert.IsTrue(remaining.IsFailure);
         Assert.AreEqual("Budget exceeded by 100.", remaining.ErrorMessage);
     }
+
+    [TestMethod]
+    public void AddCategory_WhenDuplicateName_ReturnsFailure()
+    {
+        // Arrange
+        var budgetCategory1 = new BudgetCategory
+        {
+            BudgetId = _dummyBudget.Id,
+            Name = "Food",
+            AllocatedBudget = 200
+        };
+
+        var budgetCategory2 = new BudgetCategory
+        {
+            BudgetId = _dummyBudget.Id,
+            Name = "Food",
+            AllocatedBudget = 100
+        };
+
+        _budgetDomainService.AddCategory(_dummyBudget, budgetCategory1);
+
+        // Act
+        var result = _budgetDomainService.AddCategory(_dummyBudget, budgetCategory2);
+
+        // Assert
+        Assert.IsTrue(result.IsFailure);
+        Assert.AreEqual($"Category '{budgetCategory2.Name}' already exists.", result.ErrorMessage);
+    }
+
+    [TestMethod]
+    public void AddCategory_WhenAllocationExceedsBudget_ReturnsFailure()
+    {
+        // Arrange
+        var budgetCategory = new BudgetCategory
+        {
+            BudgetId = _dummyBudget.Id,
+            Name = "Oversize",
+            AllocatedBudget = 1200
+        };
+
+        // Act
+        var result = _budgetDomainService.AddCategory(_dummyBudget, budgetCategory);
+
+        // Assert
+        Assert.IsTrue(result.IsFailure);
+        Assert.AreEqual("Category allocation exceeds the total budget.", result.ErrorMessage);
+    }
+
+    [TestMethod]
+    public void UpdateCategoryAllocation_WhenCategoryNotFound_ReturnsFailure()
+    {
+        // Act
+        var result = _budgetDomainService.UpdateCategoryAllocation(_dummyBudget, Guid.NewGuid(), 100);
+
+        // Assert
+        Assert.IsTrue(result.IsFailure);
+        Assert.AreEqual("Category not found.", result.ErrorMessage);
+    }
+
+    [TestMethod]
+    public void GetAllocatedAmount_WithNullBudget_ThrowsArgumentNullException()
+    {
+        // Act & Assert
+        Assert.ThrowsExactly<ArgumentNullException>(() => _budgetDomainService.GetAllocatedAmount(null));
+    }
+
+    [TestMethod]
+    public void GetRemainingBudget_WithNullBudget_ThrowsArgumentNullException()
+    {
+        // Act & Assert
+        Assert.ThrowsExactly<ArgumentNullException>(() => _budgetDomainService.GetRemainingBudget(null));
+    }
+
+    [TestMethod]
+    public void CanAllocateBudget_WithNonPositiveAmount_ThrowsArgumentOutOfRangeException()
+    {
+        // Act & Assert
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => _budgetDomainService.CanAllocateBudget(_dummyBudget, 0));
+    }
 }

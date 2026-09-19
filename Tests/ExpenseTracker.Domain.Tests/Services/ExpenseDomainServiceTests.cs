@@ -241,4 +241,109 @@ public class ExpenseDomainServiceTests
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => _expenseDomainService.CanAddExpense(_dummyCategory, -100));
     }
 
+    [TestMethod]
+    public void GetTotalExpense_WithNoExpenses_ReturnsZero()
+    {
+        // Arrange
+        var emptyCategory = new BudgetCategory
+        {
+            BudgetId = Guid.NewGuid(),
+            Name = "Empty",
+            AllocatedBudget = 200,
+            Expenses = new List<Expense>()
+        };
+
+        // Act
+        var total = _expenseDomainService.GetTotalExpense(emptyCategory).Value;
+
+        // Assert
+        Assert.AreEqual(0, total);
+    }
+
+    [TestMethod]
+    public void GetTotalExpense_WithNullExpensesList_ReturnsZero()
+    {
+        // Arrange
+        var category = new BudgetCategory
+        {
+            BudgetId = Guid.NewGuid(),
+            Name = "NullList",
+            AllocatedBudget = 300,
+            Expenses = null
+        };
+
+        // Act
+        var total = _expenseDomainService.GetTotalExpense(category).Value;
+
+        // Assert
+        Assert.AreEqual(0, total);
+    }
+
+    [TestMethod]
+    public void GetRemainingCategoryBudget_WithNoExpenses_ReturnsAllocatedBudget()
+    {
+        // Arrange
+        var category = new BudgetCategory
+        {
+            BudgetId = Guid.NewGuid(),
+            Name = "NoExpenses",
+            AllocatedBudget = 400,
+            Expenses = new List<Expense>()
+        };
+
+        // Act
+        var remaining = _expenseDomainService.GetRemainingCategoryBudget(category).Value;
+
+        // Assert
+        Assert.AreEqual(400, remaining);
+    }
+
+    [TestMethod]
+    public void IsCategoryLimitExceeded_ReturnsFalseWhenWithinLimit()
+    {
+        // Arrange
+        var category = new BudgetCategory
+        {
+            BudgetId = Guid.NewGuid(),
+            Name = "Within",
+            AllocatedBudget = 500,
+            Expenses = new List<Expense>
+            {
+                new Expense { BudgetCategoryId = Guid.NewGuid(), Amount = 100, ExpenseDate = DateTime.UtcNow }
+            }
+        };
+
+        // Act
+        var result = _expenseDomainService.IsCategoryLimitExceeded(category).Value;
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public void CanAddExpense_WithNoExpensesAndAmountEqualsAllocated_ReturnsTrue()
+    {
+        // Arrange
+        var category = new BudgetCategory
+        {
+            BudgetId = Guid.NewGuid(),
+            Name = "Exact",
+            AllocatedBudget = 250,
+            Expenses = new List<Expense>()
+        };
+
+        // Act
+        var can = _expenseDomainService.CanAddExpense(category, 250);
+
+        // Assert
+        Assert.IsTrue(can.Value);
+    }
+
+    [TestMethod]
+    public void CanAddExpense_WithZeroAmount_ThrowsArgumentOutOfRangeException()
+    {
+        // Act & Assert
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => _expenseDomainService.CanAddExpense(_dummyCategory, 0));
+    }
+
 }
