@@ -1,90 +1,84 @@
-﻿.expenses-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--border-radius);
-    overflow: hidden;
+﻿.recent-expenses {
+    min-width: 0;
 }
-
-.component-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid var(--border);
-}
-
-    .component-header h2 {
-        margin: 0;
-        font-size: 1.1rem;
-    }
-
-    .component-header p {
-        margin: 0.35rem 0 0;
-        color: var(--text-secondary);
-        font-size: 0.85rem;
-    }
 
 .view-all {
+    color: #6c4df6;
     text-decoration: none;
-    font-size: 0.85rem;
+    font-size: 9px;
     font-weight: 600;
-    color: var(--primary);
 }
 
 .expense-list {
-    padding: 0 1.5rem;
+    padding: 4px 14px;
 }
 
 .expense-item {
-    display: flex;
-    justify-content: space-between;
+    min-height: 48px;
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
     align-items: center;
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--border);
+    gap: 9px;
+    border-bottom: 1px solid #f0f1f4;
 }
 
     .expense-item:last-child {
         border-bottom: none;
     }
 
-.expense-info {
+.expense-icon {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: #eaf8ef;
+    font-size: 13px;
+}
+
+.expense-description {
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 1px;
 }
 
-.expense-category {
-    font-weight: 600;
+    .expense-description strong {
+        overflow: hidden;
+        color: #252936;
+        font-size: 9px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .expense-description span {
+        color: #9ca3af;
+        font-size: 8px;
+    }
+
+.expense-value {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
 }
 
-.expense-date {
-    color: var(--text-secondary);
-    font-size: 0.8rem;
-}
+    .expense-value strong {
+        color: #252936;
+        font-size: 9px;
+    }
 
-.expense-remarks {
-    color: var(--text-secondary);
-    font-size: 0.75rem;
-}
-
-.expense-amount {
-    font-weight: 700;
-}
+    .expense-value span {
+        color: #9ca3af;
+        font-size: 8px;
+    }
 
 .empty-state {
-    padding: 2rem;
-    text-align: center;
-    color: var(--text-secondary);
-}
-
-@media (max-width: 600px) {
-
-    .expense-item {
-        align-items: flex-start;
-        gap: 1rem;
-    }
-
-    .expense-amount {
-        white-space: nowrap;
-    }
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    font-size: 10px;
 }

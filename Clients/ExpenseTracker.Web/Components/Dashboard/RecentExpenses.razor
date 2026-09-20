@@ -1,22 +1,18 @@
 ﻿@using ExpenseTracker.Web.Models.Expense
-<div class="expenses-card">
 
-    <div class="component-header">
+<div class="dashboard-card recent-expenses">
 
-        <div>
-            <h2>Recent Expenses</h2>
+    <div class="card-header">
 
-            <p>
-                Your latest transactions.
-            </p>
-        </div>
+        <h2>Recent Expenses</h2>
 
         <a href="/expenses"
            class="view-all">
-            View All
+            View all
         </a>
 
     </div>
+
 
     @if (Expenses is null || !Expenses.Any())
     {
@@ -34,30 +30,35 @@
             {
                 <div class="expense-item">
 
-                    <div class="expense-info">
+                    <div class="expense-icon">
+                        @GetIcon(expense.BudgetCategoryName)
+                    </div>
 
-                        <span class="expense-category">
+
+                    <div class="expense-description">
+
+                        <strong>
+                            @GetDescription(expense)
+                        </strong>
+
+                        <span>
                             @expense.BudgetCategoryName
                         </span>
 
-                        <span class="expense-date">
-                            @expense.ExpenseDate.ToString(
-                                "dd MMM yyyy")
-                        </span>
-
-                        @if (!string.IsNullOrWhiteSpace(
-                            expense.Remarks))
-                        {
-                            <span class="expense-remarks">
-                                @expense.Remarks
-                            </span>
-                        }
-
                     </div>
 
-                    <span class="expense-amount">
-                        @FormatCurrency(expense.Amount)
-                    </span>
+
+                    <div class="expense-value">
+
+                        <strong>
+                            @FormatCurrency(expense.Amount)
+                        </strong>
+
+                        <span>
+                            @expense.ExpenseDate.ToString("MMM dd, yyyy")
+                        </span>
+
+                    </div>
 
                 </div>
             }
@@ -67,16 +68,41 @@
 
 </div>
 
+
 @code {
 
     [Parameter]
     public IEnumerable<ExpenseModel>? Expenses { get; set; }
 
     [Parameter]
-    public int MaxItems { get; set; } = 5;
+    public int MaxItems { get; set; } = 3;
+
+    private static string GetDescription(ExpenseModel expense)
+    {
+        return string.IsNullOrWhiteSpace(expense.Remarks)
+            ? expense.BudgetCategoryName ?? "Expense"
+            : expense.Remarks;
+    }
+
+    private static string GetIcon(string? category)
+    {
+        if (string.IsNullOrWhiteSpace(category))
+            return "₹";
+
+        return category.ToLowerInvariant() switch
+        {
+            var value when value.Contains("grocery") => "🛒",
+            var value when value.Contains("food") => "🍴",
+            var value when value.Contains("bill") => "⚡",
+            var value when value.Contains("utility") => "⚡",
+            var value when value.Contains("transport") => "🚗",
+            var value when value.Contains("shopping") => "🛍",
+            _ => "₹"
+        };
+    }
 
     private static string FormatCurrency(decimal amount)
     {
-        return $"₹{amount:N2}";
+        return $"₹ {amount:N2}";
     }
 }

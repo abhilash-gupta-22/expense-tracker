@@ -1,49 +1,63 @@
 ﻿@page "/"
 
 @using ExpenseTracker.Web.Components.Dashboard
-@using ExpenseTracker.Web.Models.Dashboard
 @using ExpenseTracker.Web.Models.Expense
+@using ExpenseTracker.Web.Models.Category
 @using ExpenseTracker.Web.Services.Interfaces
 
 @inject IBudgetApiClient BudgetApiClient
 @inject ICategoryApiClient CategoryApiClient
 @inject IExpenseApiClient ExpenseApiClient
+@inject ILogger<Dashboard> Logger
 
 <PageTitle>Dashboard - Expense Tracker</PageTitle>
 
 <div class="dashboard-page">
 
-    <div class="page-title">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
 
-        <h2>Dashboard</h2>
+        <div>
+            <h1>Dashboard</h1>
 
-        <p>
-            Overview of your monthly budget and expenses.
-        </p>
+            <p>
+                Overview of your monthly budget and expenses.
+            </p>
+        </div>
 
     </div>
 
+
+    <!-- Summary Cards -->
     <BudgetSummary TotalBudget="@TotalBudget"
-                   TotalExpenses="@TotalExpenses" />
+                   TotalExpenses="@TotalExpenses"
+                   TotalCategories="@TotalCategories" />
 
-    <div class="dashboard-grid">
 
-        <BudgetOverview />
+    <!-- Budget Overview + Expenses Trend -->
+    <div class="dashboard-row">
 
-        <ExpensesTrend />
+        <BudgetOverview TotalBudget="@TotalBudget"
+                        TotalExpenses="@TotalExpenses"
+                        RemainingBudget="@RemainingBudget" />
+
+        <ExpensesTrend Expenses="@AllExpenses" />
 
     </div>
 
-    <div class="dashboard-grid">
 
-        <RecentExpenses Expenses="@RecentExpenses"
-                        MaxItems="5" />
+    <!-- Recent Expenses + Top Categories -->
+    <div class="dashboard-row">
 
-        <TopCategories Categories="@CategoryBudgets " />
+        <RecentExpenses Expenses="@AllExpenses"
+                        MaxItems="3" />
+
+        <TopCategories Categories="@CategoryBudgets" />
 
     </div>
 
 </div>
+
 
 @code {
 
@@ -51,7 +65,97 @@
 
     private decimal TotalExpenses { get; set; }
 
-    private IEnumerable<ExpenseModel> RecentExpenses { get; set; } = Enumerable.Empty<ExpenseModel>();
+    private decimal RemainingBudget => TotalBudget - TotalExpenses;
 
-    private List<CategoryBudgetItem> CategoryBudgets { get; set; } = new();
+    private int TotalCategories => CategoryBudgets.Count;
+
+    private List<ExpenseModel> AllExpenses { get; set; } = new();
+
+    private List<TopCategories.CategoryBudgetItem> CategoryBudgets { get; set; } = new();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardAsync();
+    }
+
+
+    private async Task LoadDashboardAsync()
+    {
+        try
+        {
+            Logger.LogInformation("Loading dashboard data.");
+
+            var currentDate = DateTime.Now;
+
+            var budget = await BudgetApiClient.GetByMonthAsync(currentDate.Year, currentDate.Month);
+
+            if (budget is null)
+            {
+                Logger.LogInformation($"No budget found for {currentDate.Month}/{currentDate.Year}.");
+
+                ClearDashboard();
+                return;
+            }
+
+            TotalBudget = budget.TotalBudget;
+
+
+            var categories = await CategoryApiClient.GetByBudgetIdAsync(budget.Id);
+
+            var categoryList = categories.ToList();
+
+
+            var expenseTasks = categoryList.Select(category => ExpenseApiClient.GetByCategoryIdAsync(category.Id));
+
+            var expenseResults = await Task.WhenAll(expenseTasks);
+
+
+            AllExpenses = expenseResults.SelectMany(expenses => expenses)
+                .OrderByDescending(expense => expense.ExpenseDate).ToList();
+
+
+            TotalExpenses = AllExpenses.Sum(expense => expense.Amount);
+
+
+            CategoryBudgets = categoryList.Select(category =>
+                {
+                    var spent = AllExpenses.Where(expense => expense.BudgetCategoryId == category.Id)
+                        .Sum(expense => expense.Amount);
+
+                    return new TopCategories.CategoryBudgetItem
+                    {
+                        Id = category.Id,
+                        Name = category.Name,
+                        AllocatedBudget = category.AllocatedBudget,
+                        SpentAmount = spent
+                    };
+                })
+                .OrderByDescending(x => x.SpentAmount)
+                .ToList();
+
+
+            Logger.LogInformation(
+                "Dashboard loaded successfully. Budget: {Budget}, Expenses: {Expenses}, Categories: {Categories}.",
+                TotalBudget,
+                TotalExpenses,
+                TotalCategories);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load dashboard data.");
+
+            ClearDashboard();
+        }
+    }
+
+
+    private void ClearDashboard()
+    {
+        TotalBudget = 0;
+        TotalExpenses = 0;
+
+        AllExpenses.Clear();
+        CategoryBudgets.Clear();
+    }
 }
