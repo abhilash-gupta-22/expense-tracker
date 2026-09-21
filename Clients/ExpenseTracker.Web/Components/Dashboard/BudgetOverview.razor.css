@@ -1,0 +1,125 @@
+﻿.dashboard-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 2px 7px rgba(15, 23, 42, 0.04);
+    overflow: hidden;
+}
+
+.card-header {
+    height: 42px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    border-bottom: 1px solid #f0f1f4;
+}
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+.budget-overview-content {
+    min-height: 145px;
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    gap: 25px;
+}
+
+.donut-container {
+    width: 125px;
+    height: 125px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.donut {
+    width: 108px;
+    height: 108px;
+    border-radius: 50%;
+    background: conic-gradient( #6c4df6 0%, #ef4444 var(--used), #22b573 var(--used), #22b573 100% );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+    .donut::before {
+        content: "";
+        position: absolute;
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: #ffffff;
+    }
+
+.donut-center {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+    .donut-center strong {
+        font-size: 14px;
+    }
+
+    .donut-center span {
+        margin-top: 1px;
+        color: #6b7280;
+        font-size: 9px;
+    }
+
+.budget-legend {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.legend-item {
+    display: grid;
+    grid-template-columns: 8px 1fr auto;
+    align-items: center;
+    gap: 7px;
+    font-size: 9px;
+}
+
+.legend-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+}
+
+    .legend-dot.purple {
+        background: #6c4df6;
+    }
+
+    .legend-dot.red {
+        background: #ef4444;
+    }
+
+    .legend-dot.green {
+        background: #22b573;
+    }
+
+.legend-label {
+    color: #4b5563;
+}
+
+.legend-item strong {
+    font-size: 9px;
+}
+
+@media (max-width: 600px) {
+
+    .budget-overview-content {
+        flex-direction: column;
+    }
+}
