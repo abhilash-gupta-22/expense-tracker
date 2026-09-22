@@ -3,24 +3,17 @@
 <div class="dashboard-card trend-card">
 
     <div class="card-header">
-
         <h2>Expenses Trend</h2>
 
-        <select @bind="SelectedPeriod"
-                class="period-select">
-
+        <select @bind="SelectedPeriod" class="period-select">
             <option value="This Month">
                 This Month
             </option>
-
             <option value="Last Month">
                 Last Month
             </option>
-
         </select>
-
     </div>
-
 
     <div class="chart-container">
 
@@ -37,7 +30,6 @@
                  class="trend-chart">
 
                 <!-- Grid -->
-
                 <line x1="45" y1="20"
                       x2="485" y2="20"
                       class="grid-line" />
@@ -54,18 +46,13 @@
                       x2="485" y2="125"
                       class="grid-line" />
 
-
                 <!-- Area -->
 
-                <path d="@AreaPath"
-                      class="chart-area" />
-
+                <path d="@AreaPath" class="chart-area" />
 
                 <!-- Line -->
 
-                <polyline points="@PolylinePoints"
-                          class="chart-line" />
-
+                <polyline points="@PolylinePoints" class="chart-line" />
 
                 <!-- Points -->
                 @foreach (var point in Points)
@@ -76,34 +63,27 @@
                             class="chart-point" />
                 }
 
-
                 <!-- Y axis -->
-
                 <text x="5" y="24"
                       class="axis-label">
                     @FormatAxis(MaxValue)
                 </text>
-
                 <text x="5" y="59"
                       class="axis-label">
                     @FormatAxis(MaxValue * .75m)
                 </text>
-
                 <text x="5" y="94"
                       class="axis-label">
                     @FormatAxis(MaxValue * .5m)
                 </text>
-
                 <text x="5" y="129"
                       class="axis-label">
                     @FormatAxis(MaxValue * .25m)
                 </text>
-
                 <text x="5" y="164"
                       class="axis-label">
                     ₹ 0
                 </text>
-
             </svg>
         }
 
@@ -146,12 +126,10 @@
         }
     }
 
-
     protected override void OnParametersSet()
     {
         BuildChart();
     }
-
 
     private void BuildChart()
     {
@@ -191,23 +169,17 @@
 
             var x = count == 1
                 ? startX
-                : startX +
-                  (width * i / (count - 1));
+                : startX + (width * i / (count - 1));
 
-            var y =
-                startY +
-                height -
-                ((item.Amount / MaxValue) * height);
+            var y = startY + height - ((item.Amount / MaxValue) * height);
 
-            Points.Add(
-                new ChartPoint
-                {
-                    X = x,
-                    Y = y
-                });
+            Points.Add(new ChartPoint
+            {
+                X = x,
+                Y = y
+            });
         }
     }
-
 
     private static string FormatAxis(decimal amount)
     {
@@ -216,7 +188,6 @@
 
         return $"₹{amount:0}";
     }
-
 
     private sealed class ChartPoint
     {

@@ -1,80 +1,55 @@
 ﻿<div class="dashboard-card budget-overview">
 
     <div class="card-header">
-
         <h2>Budget Overview</h2>
-
     </div>
-
 
     <div class="budget-overview-content">
 
         <div class="donut-container">
-
-            <div class="donut"
-                 style="--used:@UsagePercentage.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%">
-
+            <div class="donut" style="--used:@UsagePercentage.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%">
                 <div class="donut-center">
-
                     <strong>
                         @UsagePercentage.ToString("0.00")%
                     </strong>
-
                     <span>
                         Used
                     </span>
-
                 </div>
-
             </div>
-
         </div>
-
 
         <div class="budget-legend">
 
             <div class="legend-item">
-
                 <span class="legend-dot purple"></span>
-
                 <span class="legend-label">
                     Total Budget
                 </span>
-
                 <strong>
                     @FormatCurrency(TotalBudget)
                 </strong>
-
             </div>
 
-
             <div class="legend-item">
-
                 <span class="legend-dot red"></span>
-
                 <span class="legend-label">
                     Total Expenses
                 </span>
-
                 <strong>
                     @FormatCurrency(TotalExpenses)
                 </strong>
-
             </div>
 
 
             <div class="legend-item">
-
                 <span class="legend-dot green"></span>
-
                 <span class="legend-label">
                     Remaining
                 </span>
-
                 <strong>
                     @FormatCurrency(RemainingBudget)
                 </strong>
-
             </div>
 
         </div>
@@ -82,7 +57,6 @@
     </div>
 
 </div>
-
 
 @code {
 
@@ -95,13 +69,9 @@
     [Parameter]
     public decimal RemainingBudget { get; set; }
 
-
-    private decimal UsagePercentage =>        TotalBudget <= 0
+    private decimal UsagePercentage => TotalBudget <= 0
             ? 0
-            : Math.Min(
-                (TotalExpenses / TotalBudget) * 100,
-                100);
-
+            : Math.Min((TotalExpenses / TotalBudget) * 100, 100);
 
     private static string FormatCurrency(decimal amount)
     {

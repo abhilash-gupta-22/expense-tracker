@@ -3,16 +3,13 @@
 <div class="dashboard-card recent-expenses">
 
     <div class="card-header">
-
         <h2>Recent Expenses</h2>
 
         <a href="/expenses"
            class="view-all">
             View all
         </a>
-
     </div>
-
 
     @if (Expenses is null || !Expenses.Any())
     {
@@ -24,9 +21,7 @@
     {
         <div class="expense-list">
 
-            @foreach (var expense in Expenses
-                .OrderByDescending(x => x.ExpenseDate)
-                .Take(MaxItems))
+            @foreach (var expense in Expenses.OrderByDescending(x => x.ExpenseDate).Take(MaxItems))
             {
                 <div class="expense-item">
 
@@ -34,30 +29,22 @@
                         @GetIcon(expense.BudgetCategoryName)
                     </div>
 
-
                     <div class="expense-description">
-
                         <strong>
                             @GetDescription(expense)
                         </strong>
-
                         <span>
                             @expense.BudgetCategoryName
                         </span>
-
                     </div>
 
-
                     <div class="expense-value">
-
                         <strong>
                             @FormatCurrency(expense.Amount)
                         </strong>
-
                         <span>
                             @expense.ExpenseDate.ToString("MMM dd, yyyy")
                         </span>
-
                     </div>
 
                 </div>
@@ -67,7 +54,6 @@
     }
 
 </div>
-
 
 @code {
 

@@ -1,16 +1,12 @@
 ﻿<div class="dashboard-card top-categories">
 
     <div class="card-header">
-
         <h2>Top Categories</h2>
 
-        <a href="/categories"
-           class="view-all">
+        <a href="/categories" class="view-all">
             View all
         </a>
-
     </div>
-
 
     @if (Categories is null || !Categories.Any())
     {
@@ -22,23 +18,16 @@
     {
         <div class="category-list">
 
-            @foreach (var category in Categories
-                .OrderByDescending(x => x.SpentAmount)
-                .Take(4))
+            @foreach (var category in Categories.OrderByDescending(x => x.SpentAmount).Take(4))
             {
                 var percentage =
                     category.AllocatedBudget <= 0
                         ? 0
-                        : Math.Min(
-                            category.SpentAmount /
-                            category.AllocatedBudget *
-                            100,
-                            100);
+                        : Math.Min(category.SpentAmount / category.AllocatedBudget * 100, 100);
 
                 <div class="category-item">
 
                     <div class="category-main">
-
                         <span class="category-name">
                             @category.Name
                         </span>
@@ -50,36 +39,27 @@
                         <span class="category-percentage">
                             @percentage.ToString("0.0")%
                         </span>
-
                     </div>
 
-
                     <div class="category-progress">
-
                         <div class="progress-track">
-
                             <div class="progress-value"
                                  style="width:@percentage.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%; background:@GetCategoryColor(category.Name)">
                             </div>
-
                         </div>
-
                     </div>
 
                 </div>
             }
-
         </div>
     }
 
 </div>
 
-
 @code {
 
     [Parameter]
     public IEnumerable<CategoryBudgetItem>? Categories { get; set; }
-
 
     private static string GetCategoryColor(string name)
     {
@@ -94,12 +74,10 @@
         };
     }
 
-
     private static string FormatCurrency(decimal amount)
     {
         return $"₹ {amount:N2}";
     }
-
 
     public class CategoryBudgetItem
     {

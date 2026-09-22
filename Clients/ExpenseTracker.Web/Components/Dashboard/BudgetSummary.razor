@@ -1,7 +1,6 @@
 ﻿<div class="summary-grid">
 
     <!-- Total Budget -->
-
     <div class="summary-card">
 
         <div class="summary-icon purple">
@@ -9,26 +8,20 @@
         </div>
 
         <div class="summary-content">
-
             <span class="summary-label">
                 Total Budget
             </span>
-
             <strong class="summary-value">
                 @FormatCurrency(TotalBudget)
             </strong>
-
             <span class="summary-description">
                 Monthly Budget
             </span>
-
         </div>
 
     </div>
 
-
     <!-- Total Expenses -->
-
     <div class="summary-card">
 
         <div class="summary-icon red">
@@ -36,26 +29,20 @@
         </div>
 
         <div class="summary-content">
-
             <span class="summary-label">
                 Total Expenses
             </span>
-
             <strong class="summary-value">
                 @FormatCurrency(TotalExpenses)
             </strong>
-
             <span class="summary-description">
                 @UsagePercentage.ToString("0.00")% of budget
             </span>
-
         </div>
 
     </div>
 
-
     <!-- Remaining -->
-
     <div class="summary-card">
 
         <div class="summary-icon green">
@@ -63,26 +50,20 @@
         </div>
 
         <div class="summary-content">
-
             <span class="summary-label">
                 Remaining
             </span>
-
             <strong class="summary-value">
                 @FormatCurrency(RemainingBudget)
             </strong>
-
             <span class="summary-description">
                 @RemainingPercentage.ToString("0.00")% left
             </span>
-
         </div>
 
     </div>
 
-
     <!-- Categories -->
-
     <div class="summary-card">
 
         <div class="summary-icon blue">
@@ -90,19 +71,15 @@
         </div>
 
         <div class="summary-content">
-
             <span class="summary-label">
                 Total Categories
             </span>
-
             <strong class="summary-value">
                 @TotalCategories
             </strong>
-
             <span class="summary-description">
                 Active categories
             </span>
-
         </div>
 
     </div>
@@ -121,19 +98,15 @@
     [Parameter]
     public int TotalCategories { get; set; }
 
-
     private decimal RemainingBudget => TotalBudget - TotalExpenses;
-
 
     private decimal UsagePercentage => TotalBudget <= 0
             ? 0
             : (TotalExpenses / TotalBudget) * 100;
 
-
     private decimal RemainingPercentage => TotalBudget <= 0
             ? 0
             : (RemainingBudget / TotalBudget) * 100;
-
 
     private static string FormatCurrency(decimal amount)
     {
