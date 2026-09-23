@@ -14,7 +14,6 @@
 <div class="reports-page">
 
     <!-- Header -->
-
     <div class="page-header">
 
         <div>
@@ -78,7 +77,6 @@
     else
     {
         <!-- Summary -->
-
         <div class="report-summary">
 
             <div class="summary-card">
@@ -88,8 +86,7 @@
                 </span>
 
                 <strong>
-                    @FormatCurrency(
-                        _selectedBudget?.TotalBudget ?? 0)
+                    @FormatCurrency(_selectedBudget?.TotalBudget ?? 0)
                 </strong>
 
             </div>
@@ -170,11 +167,9 @@
                                 </strong>
 
                                 <span>
-                                    @FormatCurrency(
-                                        category.SpentAmount)
+                                    @FormatCurrency(category.SpentAmount)
                                     spent of
-                                    @FormatCurrency(
-                                        category.AllocatedBudget)
+                                    @FormatCurrency(category.AllocatedBudget)
                                 </span>
 
                             </div>
@@ -185,16 +180,14 @@
 
                                     <div class="progress-value"
                                          style="width:@GetPercentage(
-                                                                                                                                                                                                                                                                                             category.SpentAmount,
-                                                                                                                                                                                                                                                                                             category.AllocatedBudget)%">
+                                                                                                                                                                                                                                                                                                                                     category.SpentAmount,
+                                                                                                                                                                                                                                                                                                                                     category.AllocatedBudget)%">
                                     </div>
 
                                 </div>
 
                                 <span class="percentage">
-                                    @GetPercentage(
-                                        category.SpentAmount,
-                                        category.AllocatedBudget)
+                                    @GetPercentage(category.SpentAmount, category.AllocatedBudget)
                                     %
                                 </span>
 
@@ -248,16 +241,14 @@
                                 </strong>
 
                                 <span>
-                                    @expense.ExpenseDate.ToString(
-                                        "dd MMM yyyy")
+                                    @expense.ExpenseDate.ToString("dd MMM yyyy")
                                 </span>
 
                             </div>
 
                             <div class="transaction-amount">
 
-                                @FormatCurrency(
-                                    expense.Amount)
+                                @FormatCurrency(expense.Amount)
 
                             </div>
 

@@ -27,7 +27,6 @@
 
     </div>
 
-
     <!-- Summary Cards -->
     <BudgetSummary TotalBudget="@TotalBudget"
                    TotalExpenses="@TotalExpenses"
@@ -45,7 +44,6 @@
 
     </div>
 
-
     <!-- Recent Expenses + Top Categories -->
     <div class="dashboard-row">
 
@@ -57,7 +55,6 @@
     </div>
 
 </div>
-
 
 @code {
 
@@ -73,12 +70,10 @@
 
     private List<TopCategories.CategoryBudgetItem> CategoryBudgets { get; set; } = new();
 
-
     protected override async Task OnInitializedAsync()
     {
         await LoadDashboardAsync();
     }
-
 
     private async Task LoadDashboardAsync()
     {
@@ -100,21 +95,13 @@
 
             TotalBudget = budget.TotalBudget;
 
-
-            var categories = await CategoryApiClient.GetByBudgetIdAsync(budget.Id);
-
+            var categories = await CategoryApiClient.GetByBudgetIdAsync(budget.Id).ConfigureAwait(false);
             var categoryList = categories.ToList();
 
-
             var expenseTasks = categoryList.Select(category => ExpenseApiClient.GetByCategoryIdAsync(category.Id));
+            var expenseResults = await Task.WhenAll(expenseTasks).ConfigureAwait(false);
 
-            var expenseResults = await Task.WhenAll(expenseTasks);
-
-
-            AllExpenses = expenseResults.SelectMany(expenses => expenses)
-                .OrderByDescending(expense => expense.ExpenseDate).ToList();
-
-
+            AllExpenses = expenseResults.SelectMany(expenses => expenses).OrderByDescending(expense => expense.ExpenseDate).ToList();
             TotalExpenses = AllExpenses.Sum(expense => expense.Amount);
 
 
@@ -135,16 +122,11 @@
                 .ToList();
 
 
-            Logger.LogInformation(
-                "Dashboard loaded successfully. Budget: {Budget}, Expenses: {Expenses}, Categories: {Categories}.",
-                TotalBudget,
-                TotalExpenses,
-                TotalCategories);
+            Logger.LogInformation($"Dashboard loaded successfully. Budget: {TotalBudget}, Expenses: {TotalExpenses}, Categories: {TotalCategories}.");
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Failed to load dashboard data.");
-
             ClearDashboard();
         }
     }
